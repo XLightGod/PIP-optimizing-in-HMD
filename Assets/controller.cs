@@ -18,16 +18,20 @@ public class controller : MonoBehaviour
 
     private ViewPointController VPC = new ViewPointController();
 
+    const int width = 1024;
+    const int height = 512;
+    const int framerate = 30;
+
     private class TimePoint
     {
         public float time;
         public Vector3 pos;
         public float fov;
-        public TimePoint(float time, Vector3 pos, float fov)
+        public TimePoint(float frame, float posx, float posy, float fov)
         {
-            this.time = time;
-            this.pos = pos;
-            this.fov = fov;
+            this.time = frame / framerate;
+            this.pos = new Vector3((posy - height / 2) / (height / 2) * 90f, (posx - 8 - width / 2) / (width / 2) * 180f, 0);
+            this.fov = Math.Max(fov, 15);
         }
     }
     private class ViewPoint
@@ -46,6 +50,7 @@ public class controller : MonoBehaviour
 
             cameraWrapper = new GameObject("CameraWrapper");
             cameraWrapper.transform.parent = controller;
+            cameraWrapper.transform.localEulerAngles = new Vector3(0, 90, 0);
             camera = Instantiate(cameraTemplate, cameraWrapper.transform);
             camera.GetComponent<Camera>().targetTexture = new RenderTexture(500, 500, 24);
         }
@@ -54,13 +59,7 @@ public class controller : MonoBehaviour
         // returns false if not start yet or has ended
         public bool Check(float time)
         {
-            while (state < timePoints.Length && time >= timePoints[state].time)
-            {
-                cameraWrapper.transform.localEulerAngles = timePoints[state].pos;
-                camera.transform.eulerAngles = cameraWrapper.transform.eulerAngles;
-                camera.GetComponent<Camera>().fieldOfView = timePoints[state].fov;
-                state++;
-            }
+            while (state < timePoints.Length && time >= timePoints[state].time) state++;
             if (state == 0) return false;
             if (state == timePoints.Length)
             {
@@ -68,7 +67,11 @@ public class controller : MonoBehaviour
                 Destroy(cameraWrapper);
                 return false;
             }
-
+            float k = (time - timePoints[state - 1].time) / (timePoints[state].time - timePoints[state - 1].time);
+            camera.transform.localEulerAngles =
+                timePoints[state - 1].pos + k * (timePoints[state].pos - timePoints[state - 1].pos);
+            camera.GetComponent<Camera>().fieldOfView =
+                timePoints[state - 1].fov + k * (timePoints[state].fov - timePoints[state - 1].fov);
             return true;
         }
 
@@ -118,7 +121,7 @@ public class controller : MonoBehaviour
                     for (int j = 0; j < numTimePoints; j++)
                     {
                         string[] info = reader.ReadLine().Split(' ');
-                        timePoints[j] = new TimePoint(float.Parse(info[0]), new Vector3(float.Parse(info[1]), float.Parse(info[2]), 0), float.Parse(info[3]));
+                        timePoints[j] = new TimePoint(int.Parse(info[0]), int.Parse(info[1]), int.Parse(info[2]), float.Parse(info[3]));
                     }
                     viewPoints.Add(new ViewPoint(cameraTemplate, controller, timePoints));
                 }
@@ -219,7 +222,7 @@ public class controller : MonoBehaviour
     void Update()
     {
         VPC.Update(timer, mainCamera, boardSize, boardDis);
-
-        timer += Time.deltaTime;
+        if (videoPlayer.GetComponent<VideoPlayer>().isPlaying)
+            timer += Time.deltaTime;
     }
 }
