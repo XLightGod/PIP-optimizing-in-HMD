@@ -30,8 +30,14 @@ public class controller : MonoBehaviour
         public TimePoint(float frame, float posx, float posy, float fov)
         {
             this.time = frame / framerate;
-            this.pos = new Vector3((posy - height / 2) / (height / 2) * 90f, (posx - 8 - width / 2) / (width / 2) * 180f, 0);
-            this.fov = Math.Max(fov, 15);
+            float px = (posx - width / 2) / (width / 4);
+            float qx = 0;
+            if (px > 1) qx = (float)(Math.Atan(px - 1.5) / (Math.PI / 4)) + 1.5f;
+            else if (px < -1) qx = (float)(Math.Atan(px + 1.5) / (Math.PI / 4)) - 1.5f;
+            else if (px > 0) qx = (float)(Math.Atan(px - 0.5) / (Math.PI / 4)) + 0.5f;
+            else if (px < -0) qx = (float)(Math.Atan(px + 0.5) / (Math.PI / 4)) - 0.5f;
+            this.pos = new Vector3((posy - height / 2) / (height / 2) * 90f, qx * 90f, 0);
+            this.fov = Math.Max(fov, 10);
         }
     }
     private class ViewPoint
