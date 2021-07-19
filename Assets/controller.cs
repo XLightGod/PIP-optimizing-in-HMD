@@ -3,178 +3,193 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using UnityEngine.Video;
+using System.IO;
 
 public class controller : MonoBehaviour
 {
-    public bool alwaysShowAll;   //0
-    public float disappearHorizontal;
-    public float disappearVertical;
-    public bool enablePerspectiveProjection; //1
-    public bool enableRotation;  //2
-    public bool enableScale;     //3
-    public float size;
-    public float maxTilt;
-    public bool enableDepth;     //4
-    public float maxDepth;
-    const float disX = 37;
+    public float boardSize;
+    public float boardSpace;
+    public float boardDis;
 
     public GameObject mainCamera;
     public GameObject videoPlayer;
     public GameObject cameraTemplate;
     public GameObject boardTemplate;
+    public GameObject lineTemplate;
 
-    private class ViewPoint {
-        controller father;
-        float startTime;
-        float endTime;
-        Vector3 pos;
-        bool active;
-        GameObject object1;
-        GameObject camera;
-        GameObject board;
-        public ViewPoint(controller father, float startTime, float endTime, Vector3 pos)
+    private ViewPointController VPC = new ViewPointController();
+
+    private class TimePoint
+    {
+        public float time;
+        public Vector3 pos;
+        public float fov;
+        public TimePoint(float time, Vector3 pos, float fov)
         {
-            this.father = father;
-            this.startTime = startTime;
-            this.endTime = endTime;
+            this.time = time;
             this.pos = pos;
-            this.active = false;
+            this.fov = fov;
+        }
+    }
+    private class ViewPoint
+    {
+        private TimePoint[] timePoints;
+        public int importance { get; }
+
+        private int state;
+
+        public GameObject cameraWrapper { get; }
+        public GameObject camera { get; }
+        public ViewPoint(GameObject cameraTemplate, Transform controller, TimePoint[] timePoints, int importance = 0)
+        {
+            this.timePoints = timePoints;
+            this.importance = importance;
+            state = 0;
+
+            cameraWrapper = new GameObject("CameraWrapper");
+            cameraWrapper.transform.parent = controller;
+            camera = Instantiate(cameraTemplate, cameraWrapper.transform);
+            camera.GetComponent<Camera>().targetTexture = new RenderTexture(500, 500, 24);
         }
 
-        private void normalize(ref float x)
+        public bool Check(float time)
+        {
+            while (state < timePoints.Length && time >= timePoints[state].time)
+            {
+                cameraWrapper.transform.localEulerAngles = timePoints[state].pos;
+                camera.transform.eulerAngles = cameraWrapper.transform.eulerAngles;
+                camera.GetComponent<Camera>().fieldOfView = timePoints[state].fov;
+                state++;
+            }
+            // 考虑插值？
+
+            if (state == 0) return false;
+            if (state == timePoints.Length)
+            {
+                Destroy(camera);
+                Destroy(cameraWrapper);
+                return false;
+            }
+
+            return true;
+        }
+
+    }
+
+    private class ViewPointController
+    {
+        private List<ViewPoint> viewPoints, activePoints;
+        private GameObject[] boards = new GameObject[4];
+        private GameObject[] lines = new GameObject[4];
+
+        public ViewPointController()
+        {
+            viewPoints = new List<ViewPoint>();
+            activePoints = new List<ViewPoint>();
+        }
+
+        public void Init(GameObject boardTemplate, GameObject lineTemplate, Transform mainCamera)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                boards[i] = Instantiate(boardTemplate, mainCamera);
+                lines[i] = Instantiate(lineTemplate, boards[i].transform);
+            }
+        }
+
+        public void Load(String filename, GameObject cameraTemplate, Transform controller)
+        {
+            using (TextReader reader = File.OpenText(filename))
+            {
+                int n = int.Parse(reader.ReadLine());
+                for (int i = 0; i < n; i++)
+                {
+                    int numTimePoints = int.Parse(reader.ReadLine());
+                    TimePoint[] timePoints = new TimePoint[numTimePoints];
+                    for (int j = 0; j < numTimePoints; j++)
+                    {
+                        string[] info = reader.ReadLine().Split(' ');
+                        timePoints[j] = new TimePoint(float.Parse(info[0]), new Vector3(float.Parse(info[1]), float.Parse(info[2]), 0), float.Parse(info[3]));
+                    }
+                    viewPoints.Add(new ViewPoint(cameraTemplate, controller, timePoints));
+                }
+            }
+        }
+        private void Normalize(ref float x)
         {
             while (x > 180) x -= 360;
             while (x < -180) x += 360;
         }
-        
-        public void update()
+        private Vector2 Pos(float x)
         {
-            Vector3 rotation = object1.transform.eulerAngles - father.mainCamera.transform.eulerAngles;
-            normalize(ref rotation.x);
-            normalize(ref rotation.y);
-            rotation.z = 0;
-
-            //Disapper function
-            if (!father.alwaysShowAll && 
-                Math.Abs(rotation.x) < father.disappearHorizontal && 
-                Math.Abs(rotation.y) < father.disappearVertical)
-            {
-                board.SetActive(false);
-                return;
-            }
-            board.SetActive(true);
-
-            //Rotation calculation
-            Vector3 rot = Vector3.zero;
-            if (father.enableRotation)
-            {
-                rot.z = (float)(180 / Math.PI * Math.Atan2(rotation.y, rotation.x));
-            }
-            camera.transform.localEulerAngles = rot;
-
-            rotation.x /= 90;
-            rotation.y /= 180;
-
-            //Perspective projection
-            if (father.enablePerspectiveProjection)
-            {
-                rot.x = rotation.x * father.maxTilt;
-                rot.y = rotation.y * father.maxTilt;
-            }
-            rot.z += 180;
-
-            board.transform.localEulerAngles = rot;
-
-            //Pos calculation
-
-            Vector3 pos = Vector3.zero;
-
-            //Depth
-            float depth = 0;
-            if (father.enableDepth)
-            {
-                depth = father.maxDepth * (0.8f - rotation.magnitude);
-            }
-            pos.x = disX - depth;
-            pos.y = pos.x * Math.Abs(rotation.x) / Math.Abs(rotation.y);
-
-            if (pos.y > disX / 2)
-            {
-                pos.x *= disX / 2 / pos.y;
-                pos.y = disX / 2;
-            }
-
-            if (rotation.y < 0) pos.x *= -1;
-            if (rotation.x > 0) pos.y *= -1;
-
-            //?
-            pos.z = 70;// + depth;
-            board.transform.localPosition = pos;
-
-            //Size calculation
-            Vector3 scale = new Vector3(father.size, father.size, 0.5f);
-            if (father.enableScale)
-            {
-                float scaleFactor = 1.3f - rotation.magnitude;
-                if (scaleFactor < 0.7f) scaleFactor = 0.7f;
-                if (scaleFactor > 1) scaleFactor = 1;
-                scale.x = scale.y = father.size * scaleFactor;
-            }
-            board.transform.localScale = scale;
+            float t = (float)Math.Tan(x * Math.PI / 180);
+            if (x >= -135 && x < -45) return new Vector2(-1 / t, -1);
+            if (x >= -45 && x < 45) return new Vector2(1, t);
+            if (x >= 45 && x < 135) return new Vector2(1 / t, 1);
+            return new Vector2(-1, -t);
         }
-
-        public void start()
+        public void Update(float timer, GameObject mainCamera, float boardSize, float boardSpace, float boardDis)
         {
-            active = true;
-            object1 = Instantiate(new GameObject(), father.transform);
-            camera = Instantiate(father.cameraTemplate, object1.transform);
-            object1.transform.localEulerAngles = pos;
-            board = Instantiate(father.boardTemplate, father.mainCamera.transform);
-            board.GetComponent<MeshRenderer>().material.mainTexture = 
-                camera.GetComponent<Camera>().targetTexture = 
-                new RenderTexture(500, 500, 24);
-            update();
+            for (int i = 0; i < activePoints.Count; i++)
+            {
+                if (!activePoints[i].Check(timer))
+                    activePoints.RemoveAt(i--);
+            }
+
+            for (int i = 0; i < viewPoints.Count; i++)
+            {
+                if (viewPoints[i].Check(timer))
+                {
+                    activePoints.Add(viewPoints[i]);
+                    viewPoints.RemoveAt(i--);
+                }
+            }
+
+            activePoints.Sort((x, y) => -x.importance.CompareTo(y.importance));
+
+            int boardNum = Math.Min(activePoints.Count, 4);
+            for (int i = 0; i < 4; i++) boards[i].SetActive(false);
+            for (int i = 0; i < boardNum; i++)
+            {
+                boards[i].GetComponent<MeshRenderer>().material.mainTexture = activePoints[i].camera.GetComponent<Camera>().targetTexture;
+                Vector3 dir = activePoints[i].cameraWrapper.transform.eulerAngles - mainCamera.transform.eulerAngles;
+                Normalize(ref dir.x);
+                Normalize(ref dir.y);
+                dir.z = 0;
+                dir.x /= 90;
+                dir.x = -dir.x;
+                dir.y /= 180;
+                float arc = 85 - Math.Min(dir.magnitude, 1) * 75;
+                float d1 = (float)(Math.Atan2(dir.x, dir.y) * 180 / Math.PI - arc / 2);
+                float d2 = (float)(Math.Atan2(dir.x, dir.y) * 180 / Math.PI + arc / 2);
+                Vector2 p1 = Pos(d1) / 2;
+                Vector2 p2 = Pos(d2) / 2;
+                boards[i].transform.localScale = new Vector3(boardSize, boardSize, 0.01f);
+                boards[i].transform.localPosition =
+                    new Vector3((i - ((boardNum - 1) / 2.0f)) * (boardSize + boardSpace), -0.25f, boardDis);
+                lines[i].transform.localPosition = -(p1 + p2) / 2;
+                lines[i].transform.localScale = new Vector3((float)Math.Abs(p1.x - p2.x) + 0.1f, (float)Math.Abs(p1.y - p2.y) + 0.1f, 0.995f);
+
+                boards[i].SetActive(true);
+            }
         }
-
-        public void stop()
-        {
-            active = false;
-            Destroy(camera);
-            Destroy(board);
-        }
-
-        public void check(float time)
-        {
-            if (startTime <= time && time < endTime && !active) start();
-            else if (time >= endTime && active) stop();
-
-            if (active) update();
-        }
-
     }
+
 
     private int viewNum = 0;
     ViewPoint[] viewPoints;
 
     private float timer = 0;
 
-    private void loadViews()
+    private void LoadViews()
     {
-        viewNum = 7;
-        viewPoints = new ViewPoint[viewNum];
-        // 添加viewPoint
-        viewPoints[0] = new ViewPoint(this, 22, 64, new Vector3(2.465f, 30.901f, 0));//rabbit1
-        viewPoints[1] = new ViewPoint(this, 64, 108, new Vector3(4.917f, 69.21001f, 0));//rabbit2
-        viewPoints[2] = new ViewPoint(this, 75, 78, new Vector3(-6.808f, 134.055f, 0));//???
-        viewPoints[3] = new ViewPoint(this, 79, 90, new Vector3(-32.239f, -357.21f, 0));//plane1
-        viewPoints[4] = new ViewPoint(this, 90, 244, new Vector3(-8.024f, 165.992f, 0));//plane2
-        viewPoints[5] = new ViewPoint(this, 108, 165, new Vector3(17.486f, -361.763f, 0));//rabbit3
-        viewPoints[6] = new ViewPoint(this, 149, 155, new Vector3(-23.808f, -257.602f, 0));//eagle
+        VPC.Init(boardTemplate, lineTemplate, mainCamera.transform);
+        VPC.Load("data/data.txt", cameraTemplate, transform);
     }
 
     void Start()
     {
-        loadViews();
+        LoadViews();
     }
 
     private const float speed = 0.25f;
@@ -199,29 +214,7 @@ public class controller : MonoBehaviour
         }
         mainCamera.transform.eulerAngles = rotation;
 
-        if (Input.GetKeyDown(KeyCode.Alpha0))
-        {
-            alwaysShowAll = !alwaysShowAll;
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            enablePerspectiveProjection = !enablePerspectiveProjection;
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            enableRotation = !enableRotation;
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            enableDepth = !enableDepth;
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha4))
-        {
-            enableScale = !enableScale;
-        }
-
-        for (int i = 0; i < viewNum; i++)
-            viewPoints[i].check(timer);
+        VPC.Update(timer, mainCamera, boardSize, boardSpace, boardDis);
 
         timer += Time.deltaTime;
     }
