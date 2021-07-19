@@ -191,13 +191,13 @@ public class controller : MonoBehaviour
             }
 
             // sort by position
-            activePoints.Sort((x, y) => Normalize((x.cameraWrapper.transform.eulerAngles - mainCamera.transform.eulerAngles).y).CompareTo(Normalize((y.cameraWrapper.transform.eulerAngles - mainCamera.transform.eulerAngles).y)));
+            //activePoints.Sort((x, y) => Normalize((x.camera.transform.eulerAngles - mainCamera.transform.eulerAngles).y).CompareTo(Normalize((y.camera.transform.eulerAngles - mainCamera.transform.eulerAngles).y)));
 
             int boardNum = Math.Min(activePoints.Count, 4);
             for (int i = 0; i < 8; i++) boards[i].SetActive(false);
             for (int i = 0; i < boardNum; i++)
             {
-                Vector3 dir = activePoints[i].cameraWrapper.transform.eulerAngles - mainCamera.transform.eulerAngles;
+                Vector3 dir = activePoints[i].camera.transform.eulerAngles - mainCamera.transform.eulerAngles;
                 dir = new Vector3(Normalize(dir.y) / 180, -Normalize(dir.x) / 180, 0);
 
                 RendArrow(arrows[i], dir);
