@@ -145,7 +145,7 @@ public class controller : MonoBehaviour
                 }
             }
 
-            activePoints.Sort((x, y) => -x.importance.CompareTo(y.importance));
+            activePoints.Sort((x, y) => Normalize((x.cameraWrapper.transform.eulerAngles - mainCamera.transform.eulerAngles).y).CompareTo(Normalize((y.cameraWrapper.transform.eulerAngles - mainCamera.transform.eulerAngles).y)));
 
             int boardNum = Math.Min(activePoints.Count, 4);
             for (int i = 0; i < 4; i++) boards[i].SetActive(false);
