@@ -88,8 +88,8 @@ public class controller : MonoBehaviour
     private class ViewPointController
     {
         private List<ViewPoint> viewPoints, activePoints;
-        private GameObject[] boards = new GameObject[8];
-        private GameObject[] arrows = new GameObject[8];
+        private GameObject[] boards = new GameObject[4];
+        private GameObject[] arrows = new GameObject[4];
 
         public ViewPointController()
         {
@@ -100,7 +100,7 @@ public class controller : MonoBehaviour
         // Create Unity objects
         public void Init(GameObject boardTemplate, GameObject arrowTemplate, Transform mainCamera)
         {
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < 4; i++)
             {
                 boards[i] = Instantiate(boardTemplate, mainCamera);
                 arrows[i] = Instantiate(arrowTemplate, boards[i].transform);
@@ -143,34 +143,13 @@ public class controller : MonoBehaviour
         }
 
 
-        // Set transform and rendering of PIP board
-        private void RendBoard(GameObject board, GameObject camera, Vector3 dir, float fov, float boardSize, float boardDis)
+        private Vector2 Pos(float x)
         {
-            board.GetComponentInChildren<MeshRenderer>().material.mainTexture = camera.GetComponent<Camera>().GetComponent<Camera>().targetTexture;
-
-            // some confusing calculation
-            // X is useless if equals to 0
-            float X = 0f, Y = boardDis;
-            float K0 = fov / 2;
-            float K = K0 - (float)(Math.Asin(X * Math.Sin(K0 / 180 * Math.PI) / (X + Y)) / Math.PI * 180);
-
-            float tx = (float)((X + Y) * Math.Sin(dir.x * K / 180 * Math.PI));
-            float ty = (float)(Math.Abs((X + Y) * Math.Cos(dir.x * K / 180 * Math.PI)) - X);
-            board.transform.localPosition = new Vector3(tx, -0.275f, ty);
-            board.transform.localEulerAngles = new Vector3(42.5f, dir.x * K, 0);
-            board.transform.localScale = new Vector3(boardSize, boardSize, 0.01f);
-
-            board.SetActive(true);
-        }
-
-
-        private void RendArrow(GameObject arrow, Vector3 dir)
-        {
-            float angle = (float)(Math.Atan2(dir.x, dir.y) * 180 / Math.PI);
-            float dis = 0.33f + dir.magnitude * 0.67f;
-            arrow.transform.localPosition = new Vector3(dis * (float)Math.Sin(Math.Atan2(dir.x, dir.y)), dis * (float)Math.Cos(Math.Atan2(dir.x, dir.y)), 0);
-            arrow.transform.localEulerAngles = new Vector3(0, 0, -angle);
-            arrow.transform.localScale = new Vector3(0.2f, 0.2f, 1);
+            float t = (float)Math.Tan(x * Math.PI / 180);
+            if (x >= -135 && x < -45) return new Vector2(-1 / t, -1);
+            if (x >= -45 && x < 45) return new Vector2(1, t);
+            if (x >= 45 && x < 135) return new Vector2(1 / t, 1);
+            return new Vector2(-1, -t);
         }
 
         public void Update(float timer, GameObject mainCamera, float boardSize, float boardDis)
@@ -191,21 +170,28 @@ public class controller : MonoBehaviour
             }
 
             // sort by position
-            //activePoints.Sort((x, y) => Normalize((x.camera.transform.eulerAngles - mainCamera.transform.eulerAngles).y).CompareTo(Normalize((y.camera.transform.eulerAngles - mainCamera.transform.eulerAngles).y)));
+            activePoints.Sort((x, y) => Normalize((x.camera.transform.eulerAngles - mainCamera.transform.eulerAngles).y).CompareTo(Normalize((y.camera.transform.eulerAngles - mainCamera.transform.eulerAngles).y)));
 
             int boardNum = Math.Min(activePoints.Count, 4);
-            for (int i = 0; i < 8; i++) boards[i].SetActive(false);
+            for (int i = 0; i < 4; i++) boards[i].SetActive(false);
             for (int i = 0; i < boardNum; i++)
             {
+                boards[i].GetComponentInChildren<MeshRenderer>().material.mainTexture = activePoints[i].camera.GetComponent<Camera>().GetComponent<Camera>().targetTexture;
                 Vector3 dir = activePoints[i].camera.transform.eulerAngles - mainCamera.transform.eulerAngles;
                 dir = new Vector3(Normalize(dir.y) / 180, -Normalize(dir.x) / 180, 0);
 
-                RendArrow(arrows[i], dir);
-                RendArrow(arrows[i + boardNum], dir);
-                RendBoard(boards[i], activePoints[i].camera, dir, mainCamera.GetComponent<Camera>().fieldOfView, boardSize, boardDis);
-                if (dir.x < 0) dir.x += 2;
-                else dir.x -= 2;
-                RendBoard(boards[i + boardNum], activePoints[i].camera, dir, mainCamera.GetComponent<Camera>().fieldOfView, boardSize, boardDis);
+                float arc = 85 - Math.Min(dir.magnitude, 1) * 75;
+                float d1 = (float)(Math.Atan2(dir.y, dir.x) * 180 / Math.PI - arc / 2);
+                float d2 = (float)(Math.Atan2(dir.y, dir.x) * 180 / Math.PI + arc / 2);
+                Vector2 p1 = Pos(d1) / 2;
+                Vector2 p2 = Pos(d2) / 2;
+                boards[i].transform.localScale = new Vector3(boardSize, boardSize, 0.01f);
+                boards[i].transform.localPosition =
+                    new Vector3((i - ((boardNum - 1) / 2.0f)) * (boardSize + 0.1f), -0.25f, boardDis);
+                arrows[i].transform.localPosition = -(p1 + p2) / 2;
+                arrows[i].transform.localScale = new Vector3((float)Math.Abs(p1.x - p2.x) + 0.1f, (float)Math.Abs(p1.y - p2.y) + 0.1f, 0.995f);
+
+                boards[i].SetActive(true);
             }
         }
     }
