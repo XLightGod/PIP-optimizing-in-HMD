@@ -85,8 +85,7 @@ public class controller : MonoBehaviour
             float k = (time - timePoints[state - 1].time) / (timePoints[state].time - timePoints[state - 1].time);
             camera.transform.localEulerAngles =
                 timePoints[state - 1].pos + k * (timePoints[state].pos - timePoints[state - 1].pos);
-            camera.GetComponent<Camera>().fieldOfView =
-                timePoints[state - 1].fov + k * (timePoints[state].fov - timePoints[state - 1].fov);
+            camera.GetComponent<Camera>().fieldOfView = 90;
             return true;
         }
 
@@ -97,7 +96,7 @@ public class controller : MonoBehaviour
     private class ViewPointController
     {
         private List<ViewPoint> viewPoints, activePoints;
-        private GameObject[] boards = new GameObject[8];
+        private GameObject[] boards = new GameObject[4];
         //private GameObject[] arrows = new GameObject[8];
 
         public ViewPointController()
@@ -109,7 +108,7 @@ public class controller : MonoBehaviour
         // Create Unity objects
         public void Init(GameObject boardTemplate, GameObject arrowTemplate, Transform mainCamera)
         {
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < 4; i++)
             {
                 boards[i] = Instantiate(boardTemplate, mainCamera);
                 //arrows[i] = Instantiate(arrowTemplate, boards[i].transform);
@@ -153,8 +152,10 @@ public class controller : MonoBehaviour
 
 
         // Set transform and rendering of PIP board
-        private void RendBoard(GameObject board, GameObject camera, Vector3 dir, float fov, controller father)
+        private void RendBoard(GameObject board, GameObject camera, Vector3 dir, controller father)
         {
+            dir.z = 0;
+
             //Disapper function
             if (!father.alwaysShowAll && 
                 Math.Abs(dir.x) < father.disappearHorizontal && 
@@ -250,7 +251,7 @@ public class controller : MonoBehaviour
                 Vector3 dir = activePoints[i].camera.transform.eulerAngles - mainCamera.transform.eulerAngles;
                 //dir = new Vector3(Normalize(dir.y) / 180, -Normalize(dir.x) / 180, 0);
 
-                RendBoard(boards[i], activePoints[i].camera, dir, mainCamera.GetComponent<Camera>().fieldOfView, father);
+                RendBoard(boards[i], activePoints[i].camera, dir, father);
             }
         }
     }
