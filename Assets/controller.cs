@@ -83,8 +83,9 @@ public class controller : MonoBehaviour
                 return false;
             }
             float k = (time - timePoints[state - 1].time) / (timePoints[state].time - timePoints[state - 1].time);
+            
             camera.transform.localEulerAngles =
-                timePoints[state - 1].pos + k * (timePoints[state].pos - timePoints[state - 1].pos);
+                timePoints[state - 1].pos + k * (timePoints[state].pos - timePoints[state - 1].pos) + new Vector3(0, 0, camera.transform.localEulerAngles.z);
             camera.GetComponent<Camera>().fieldOfView = 90;
             return true;
         }
@@ -154,7 +155,11 @@ public class controller : MonoBehaviour
         // Set transform and rendering of PIP board
         private void RendBoard(GameObject board, GameObject camera, Vector3 dir, controller father)
         {
+            dir.x = Normalize(dir.x);
+            dir.y = Normalize(dir.y);
             dir.z = 0;
+
+            board.GetComponentInChildren<MeshRenderer>().material.mainTexture = camera.GetComponent<Camera>().GetComponent<Camera>().targetTexture;
 
             //Disapper function
             if (!father.alwaysShowAll && 
