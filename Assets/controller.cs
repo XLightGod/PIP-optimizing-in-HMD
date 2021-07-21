@@ -89,7 +89,7 @@ public class controller : MonoBehaviour
     {
         private List<ViewPoint> viewPoints, activePoints;
         private GameObject[] boards = new GameObject[4];
-        private GameObject[] arrows = new GameObject[4];
+        //private GameObject[] arrows = new GameObject[4];
 
         public ViewPointController()
         {
@@ -103,7 +103,7 @@ public class controller : MonoBehaviour
             for (int i = 0; i < 4; i++)
             {
                 boards[i] = Instantiate(boardTemplate, mainCamera);
-                arrows[i] = Instantiate(arrowTemplate, boards[i].transform);
+                //arrows[i] = Instantiate(arrowTemplate, boards[i].transform);
             }
         }
 
@@ -188,8 +188,8 @@ public class controller : MonoBehaviour
                 boards[i].transform.localScale = new Vector3(boardSize, boardSize, 0.01f);
                 boards[i].transform.localPosition =
                     new Vector3((i - ((boardNum - 1) / 2.0f)) * (boardSize + 0.6f), -0.25f, boardDis);
-                arrows[i].transform.localPosition = -(p1 + p2) / 2;
-                arrows[i].transform.localScale = new Vector3((float)Math.Abs(p1.x - p2.x) + 0.1f, (float)Math.Abs(p1.y - p2.y) + 0.1f, 0.995f);
+                //arrows[i].transform.localPosition = -(p1 + p2) / 2;
+                //arrows[i].transform.localScale = new Vector3((float)Math.Abs(p1.x - p2.x) + 0.1f, (float)Math.Abs(p1.y - p2.y) + 0.1f, 0.995f);
 
                 boards[i].SetActive(true);
             }
