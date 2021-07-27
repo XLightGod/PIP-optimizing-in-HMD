@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
@@ -45,6 +45,7 @@ public class controller : MonoBehaviour
         private TimePoint[] timePoints;
         // useless now
         public int importance { get; }
+        public Vector3 dir { get; set; }
         private int state;
         public GameObject cameraWrapper { get; }
         public GameObject camera { get; }
@@ -135,11 +136,14 @@ public class controller : MonoBehaviour
         }
 
         // Make sure angle x is in [-180, 180]
-        private float Normalize(float x)
+        private Vector3 Normalize(Vector3 v)
         {
-            while (x > 180) x -= 360;
-            while (x < -180) x += 360;
-            return x;
+            while (v.x > 180) v.x -= 360;
+            while (v.x < -180) v.x += 360;
+            while (v.y > 180) v.y -= 360;
+            while (v.y < -180) v.y += 360;
+            v.z = 0;
+            return v;
         }
 
 
@@ -191,14 +195,34 @@ public class controller : MonoBehaviour
             }
 
             // sort by position
-            //activePoints.Sort((x, y) => Normalize((x.camera.transform.eulerAngles - mainCamera.transform.eulerAngles).y).CompareTo(Normalize((y.camera.transform.eulerAngles - mainCamera.transform.eulerAngles).y)));
+            for (int i = 0; i < activePoints.Count; i++) {
+                activePoints[i].dir = Normalize(activePoints[i].camera.transform.eulerAngles - mainCamera.transform.eulerAngles);
+            }
+            activePoints.Sort((x, y) => x.dir.y.CompareTo(y.dir.y));
+
+            // suppose that at most 2 pips' x are the same
+            const float threshold = 60;
+            if (activePoints.Count >= 2) {
+                float dist = activePoints[0].dir.y + 360 - activePoints[activePoints.Count - 1].dir.y;
+                if (dist < threshold) {
+                    activePoints[activePoints.Count - 1].dir -= new Vector3(0, (threshold - dist) / 2, 0);
+                    activePoints[0].dir += new Vector3(0, (threshold - dist) / 2, 0);
+                }
+                for (int i = 0; i < activePoints.Count - 1; i++) {
+                    dist = activePoints[i + 1].dir.y - activePoints[i].dir.y;
+                    if (dist < threshold) {
+                        activePoints[i].dir -= new Vector3(0, (threshold - dist) / 2, 0);
+                        activePoints[i + 1].dir += new Vector3(0, (threshold - dist) / 2, 0);
+                    }
+                }
+            }
 
             int boardNum = Math.Min(activePoints.Count, 4);
             for (int i = 0; i < 8; i++) boards[i].SetActive(false);
             for (int i = 0; i < boardNum; i++)
             {
-                Vector3 dir = activePoints[i].camera.transform.eulerAngles - mainCamera.transform.eulerAngles;
-                dir = new Vector3(Normalize(dir.y) / 180, -Normalize(dir.x) / 180, 0);
+                Vector3 dir = activePoints[i].dir;
+                dir = new Vector3(dir.y / 180, -dir.x / 180, 0);
 
                 RendArrow(arrows[i], dir);
                 RendArrow(arrows[i + boardNum], dir);
