@@ -161,7 +161,7 @@ public class controller : MonoBehaviour
 
             float tx = (float)((X + Y) * Math.Sin(dir.x * K / 180 * Math.PI));
             float ty = (float)(Math.Abs((X + Y) * Math.Cos(dir.x * K / 180 * Math.PI)) - X);
-            board.transform.localPosition = new Vector3(tx, -0.275f, ty);
+            board.transform.localPosition = new Vector3(tx, -0.5f, ty);
             board.transform.localEulerAngles = new Vector3(42.5f, dir.x * K, 0);
             board.transform.localScale = new Vector3(boardSize, boardSize, 0.01f);
 
@@ -202,7 +202,7 @@ public class controller : MonoBehaviour
             activePoints.Sort((x, y) => x.dir.y.CompareTo(y.dir.y));
 
             // suppose that at most 2 pips' x are the same
-            const float threshold = 60;
+            const float threshold = 60;//小于该值不动
             if (activePoints.Count >= 2) {
                 float dist = activePoints[0].dir.y + 360 - activePoints[activePoints.Count - 1].dir.y;
                 if (dist < threshold) {
@@ -223,7 +223,7 @@ public class controller : MonoBehaviour
             for (int i = 0; i < boardNum; i++)
             {
                 Vector3 dir = activePoints[i].dir;
-                if (Math.Abs(dir.y) < mainCamera.GetComponent<Camera>().fieldOfView / 2) continue;
+                if (Math.Abs(dir.y) < mainCamera.GetComponent<Camera>().fieldOfView / 2) continue;//显示条件
                 dir = new Vector3(dir.y / 180, -dir.x / 180, 0);
 
                 RendArrow(arrows[i], dir);
