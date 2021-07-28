@@ -155,7 +155,8 @@ public class controller : MonoBehaviour
             // some confusing calculation
             // X is useless if equals to 0
             float X = 0f, Y = boardDis;
-            float K0 = fov / 2;
+            //float K0 = fov / 2;
+            float K0 = 60 / 2;
             float K = K0 - (float)(Math.Asin(X * Math.Sin(K0 / 180 * Math.PI) / (X + Y)) / Math.PI * 180);
 
             float tx = (float)((X + Y) * Math.Sin(dir.x * K / 180 * Math.PI));
@@ -226,11 +227,11 @@ public class controller : MonoBehaviour
                 dir = new Vector3(dir.y / 180, -dir.x / 180, 0);
 
                 RendArrow(arrows[i], dir);
-                RendArrow(arrows[i + boardNum], dir);
+                //RendArrow(arrows[i + boardNum], dir);
                 RendBoard(boards[i], activePoints[i].camera, dir, mainCamera.GetComponent<Camera>().fieldOfView, boardSize, boardDis);
                 if (dir.x < 0) dir.x += 2;
                 else dir.x -= 2;
-                RendBoard(boards[i + boardNum], activePoints[i].camera, dir, mainCamera.GetComponent<Camera>().fieldOfView, boardSize, boardDis);
+                //RendBoard(boards[i + boardNum], activePoints[i].camera, dir, mainCamera.GetComponent<Camera>().fieldOfView, boardSize, boardDis);
             }
         }
     }
