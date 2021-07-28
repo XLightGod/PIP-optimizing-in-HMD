@@ -222,6 +222,7 @@ public class controller : MonoBehaviour
             for (int i = 0; i < boardNum; i++)
             {
                 Vector3 dir = activePoints[i].dir;
+                if (Math.Abs(dir.y) < mainCamera.GetComponent<Camera>().fieldOfView / 2) continue;
                 dir = new Vector3(dir.y / 180, -dir.x / 180, 0);
 
                 RendArrow(arrows[i], dir);
