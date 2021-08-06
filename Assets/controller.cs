@@ -22,6 +22,17 @@ public class controller : MonoBehaviour
     const int height = 512;
     const int framerate = 30;
 
+
+    // Make sure angle x is in [-180, 180]
+    static private Vector3 Normalize(Vector3 v)
+    {
+        while (v.x > 180) v.x -= 360;
+        while (v.x < -180) v.x += 360;
+        while (v.y > 180) v.y -= 360;
+        while (v.y < -180) v.y += 360;
+        v.z = 0;
+        return v;
+    }
     private class TimePoint
     {
         public float time;
@@ -91,6 +102,7 @@ public class controller : MonoBehaviour
         private List<ViewPoint> viewPoints, activePoints;
         private GameObject[] boards = new GameObject[8];
         private GameObject[] arrows = new GameObject[8];
+        private int boardNum = 0;
 
         public ViewPointController()
         {
@@ -134,18 +146,6 @@ public class controller : MonoBehaviour
                 }
             }
         }
-
-        // Make sure angle x is in [-180, 180]
-        private Vector3 Normalize(Vector3 v)
-        {
-            while (v.x > 180) v.x -= 360;
-            while (v.x < -180) v.x += 360;
-            while (v.y > 180) v.y -= 360;
-            while (v.y < -180) v.y += 360;
-            v.z = 0;
-            return v;
-        }
-
 
         // Set transform and rendering of PIP board
         private void RendBoard(GameObject board, GameObject camera, Vector3 dir, float fov, float boardSize, float boardDis)
@@ -202,7 +202,7 @@ public class controller : MonoBehaviour
             activePoints.Sort((x, y) => x.dir.y.CompareTo(y.dir.y));
 
             // suppose that at most 2 pips' x are the same
-            const float threshold = 60;//小于该值不动
+            const float threshold = 60;//小锟节革拷值锟斤拷锟斤拷
             if (activePoints.Count >= 2) {
                 float dist = activePoints[0].dir.y + 360 - activePoints[activePoints.Count - 1].dir.y;
                 if (dist < threshold) {
@@ -218,12 +218,12 @@ public class controller : MonoBehaviour
                 }
             }
 
-            int boardNum = Math.Min(activePoints.Count, 4);
+            boardNum = Math.Min(activePoints.Count, 4);
             for (int i = 0; i < 8; i++) boards[i].SetActive(false);
             for (int i = 0; i < boardNum; i++)
             {
                 Vector3 dir = activePoints[i].dir;
-                if (Math.Abs(dir.y) < mainCamera.GetComponent<Camera>().fieldOfView / 2) continue;//显示条件
+                if (Math.Abs(dir.y) < mainCamera.GetComponent<Camera>().fieldOfView / 2) continue;//锟斤拷示锟斤拷锟斤拷
                 dir = new Vector3(dir.y / 180, -dir.x / 180, 0);
 
                 RendArrow(arrows[i], dir);
@@ -233,6 +233,16 @@ public class controller : MonoBehaviour
                 else dir.x -= 2;
                 //RendBoard(boards[i + boardNum], activePoints[i].camera, dir, mainCamera.GetComponent<Camera>().fieldOfView, boardSize, boardDis);
             }
+        }
+        public GameObject GetTargetCamera(Transform board) {
+            for (int i = 0; i < boardNum; i++) {
+                if (boards[i].transform == board) {
+                    return activePoints[i].camera;
+                }
+            }
+            // error
+            print("error");
+            return new GameObject();
         }
     }
 
@@ -250,10 +260,40 @@ public class controller : MonoBehaviour
         LoadViews();
     }
 
-    private const float speed = 0.25f;
+    private const float dragSpeed = 1.5f;
+    private const float moveSpeed = 1;
+    private bool dragging = false;
+    private bool moving = false;
+    private GameObject targetCamera; 
+
+    public void MoveTo(Transform board) {
+        targetCamera = VPC.GetTargetCamera(board);
+        moving = true;
+    }
     void Update()
     {
+        if (Input.GetMouseButton(0)) {
+            moving = false;
+            if (!dragging) dragging = true;
+            else {
+                mainCamera.transform.localEulerAngles += new Vector3(Input.GetAxis("Mouse Y") * dragSpeed, Input.GetAxis("Mouse X") * -dragSpeed, 0);
+            }
+        } else {
+            dragging = false;
+        }
+
+        if (moving) {
+            Vector3 vec = Normalize(targetCamera.transform.localEulerAngles - mainCamera.transform.localEulerAngles);
+            if (vec.magnitude <= moveSpeed) {
+                mainCamera.transform.localEulerAngles = targetCamera.transform.localEulerAngles;
+                moving = false;
+            } else {
+                mainCamera.transform.localEulerAngles += moveSpeed * Vector3.Normalize(vec);
+            }
+        }
+
         VPC.Update(timer, mainCamera, boardSize, boardDis);
+
         if (videoPlayer.GetComponent<VideoPlayer>().isPlaying)
             timer += Time.deltaTime;
     }
