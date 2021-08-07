@@ -1,6 +1,8 @@
 # coding: utf-8
 import cv2
 import numpy as np
+import tkinter as tk
+from tkinter import filedialog
 import sys
 from math import *
 
@@ -42,7 +44,8 @@ def bfs(x0, y0):
 def loadImg():
     global img
     # 在这里修改图片文件命名格式
-    img = cv2.imread("res" + str(id) + "_L.png")
+    video.set(cv2.CAP_PROP_POS_FRAMES, id)
+    rval, img = video.read()
     cv2.putText(img, str(id), (0, 15), cv2.FONT_HERSHEY_PLAIN,
                     1.0, (255, 255, 255), 2, cv2.LINE_AA)
     cv2.putText(img, str(id), (0, 15), cv2.FONT_HERSHEY_PLAIN,
@@ -70,8 +73,30 @@ def loadImg():
     cv2.imshow("image", img)
     
 sys.setrecursionlimit(1000000)
+
+window = tk.Tk()
+window.title('请输入起始帧')
+window.geometry('500x300')
+frameEntry = tk.Entry(window)
+frameEntry.insert(0, '1')
+frameEntry.pack()
+
+button = tk.Button(window, text = '确定', command = window.quit)
+button.pack()
+window.withdraw()
+
+filepath = filedialog.askopenfilename()
+print('filepath = ', filepath)
+
+window.deiconify()
+window.mainloop()
+window.withdraw()
+
+id = int(frameEntry.get())
 cv2.namedWindow("image")
 cv2.setMouseCallback("image", on_EVENT_LBUTTONDOWN)
+
+video = cv2.VideoCapture(filepath)
 loadImg()
 
 f = open("data.txt", "a+")
