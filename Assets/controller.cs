@@ -291,6 +291,18 @@ public class controller : MonoBehaviour
                 mainCamera.transform.localEulerAngles += moveSpeed * Vector3.Normalize(vec);
             }
         }
+        
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (videoPlayer.GetComponent<VideoPlayer>().isPlaying)
+            {
+                videoPlayer.GetComponent<VideoPlayer>().Pause();
+            }
+            else
+            {
+                videoPlayer.GetComponent<VideoPlayer>().Play();
+            }
+        }
 
         VPC.Update(timer, mainCamera, boardSize, boardDis);
 
