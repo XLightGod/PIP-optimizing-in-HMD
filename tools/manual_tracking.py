@@ -20,30 +20,37 @@ def on_EVENT_LBUTTONDOWN(event, x, y, flags, param):
         py = y
         loadImg()
 
-flag = {}
-
-def bfs(x0, y0):
-    if x0 < 0 or x0 >= 1024 or y0 < 0 or y0 >= 512:
+def bfs(x_, y_):
+    if x_ < 0 or x_ >= 1024 or y_ < 0 or y_ >= 512:
         return
-    if str(x0) + "," + str(y0) in flag:
-        return
-
-    x = (px - 512) * pi / 512
-    y = (py - 256) * pi / 512
-    x1 = (x0 - 512) * pi / 512
-    y1 = (y0 - 256) * pi / 512
-    theta = acos(cos(x-x1) * cos(y) * cos(y1) + sin(y) * sin(y1))
-    if round(theta / pi * 180) == fov:
-        cv2.circle(img, (x0, y0), 1, (0, 0, 255), thickness=-1)
-        flag[str(x0) + "," + str(y0)] = True
-        bfs(x0 - 1, y0)
-        bfs(x0 + 1, y0)
-        bfs(x0, y0 - 1)
-        bfs(x0, y0 + 1)
+    queue = []
+    queue.append((x_, y_))
+    flag = set()
+    while (len(queue) > 0):
+        (x0, y0) = queue.pop(0)
+        if x0 < 0:
+            x0 += 1024
+        if x0 >= 1024:
+            x0 -= 1024
+        if y0 < 0 or y0 >= 512:
+            return
+        if (x0, y0) in flag:
+            continue
+        flag.add((x0, y0))
+        x = (px - 512) * pi / 512
+        y = (py - 256) * pi / 512
+        x1 = (x0 - 512) * pi / 512
+        y1 = (y0 - 256) * pi / 512
+        theta = acos(cos(x-x1) * cos(y) * cos(y1) + sin(y) * sin(y1))
+        if round(theta / pi * 180) == fov:
+            cv2.circle(img, (x0, y0), 0, (0, 0, 255), thickness=-1)
+            queue.append((x0 - 1, y0))
+            queue.append((x0 + 1, y0))
+            queue.append((x0, y0 - 1))
+            queue.append((x0, y0 + 1))
 
 def loadImg():
     global img
-    # 在这里修改图片文件命名格式
     video.set(cv2.CAP_PROP_POS_FRAMES, id)
     rval, img = video.read()
     cv2.putText(img, str(id), (0, 15), cv2.FONT_HERSHEY_PLAIN,
