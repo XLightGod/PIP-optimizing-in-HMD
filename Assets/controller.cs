@@ -17,7 +17,9 @@ public class controller : MonoBehaviour
     public float maxTilt;
     public bool enableDepth;     //4
     public float maxDepth;
-    const float disX = 37;
+    public float disX;
+    public float disY;
+    public float disZ;
 
     public GameObject mainCamera;
     public GameObject videoPlayer;
@@ -30,6 +32,17 @@ public class controller : MonoBehaviour
     const int width = 1024;
     const int height = 512;
     const int framerate = 30;
+
+    // Make sure angle x is in [-180, 180]
+    static private Vector3 Normalize(Vector3 v)
+    {
+        while (v.x > 180) v.x -= 360;
+        while (v.x < -180) v.x += 360;
+        while (v.y > 180) v.y -= 360;
+        while (v.y < -180) v.y += 360;
+        v.z = 0;
+        return v;
+    }
 
     private class TimePoint
     {
@@ -83,7 +96,7 @@ public class controller : MonoBehaviour
                 return false;
             }
             float k = (time - timePoints[state - 1].time) / (timePoints[state].time - timePoints[state - 1].time);
-            
+
             camera.transform.localEulerAngles =
                 timePoints[state - 1].pos + k * (timePoints[state].pos - timePoints[state - 1].pos) + new Vector3(0, 0, camera.transform.localEulerAngles.z);
             camera.GetComponent<Camera>().fieldOfView = 90;
@@ -99,6 +112,7 @@ public class controller : MonoBehaviour
         private List<ViewPoint> viewPoints, activePoints;
         private GameObject[] boards = new GameObject[4];
         //private GameObject[] arrows = new GameObject[8];
+        private int boardNum = 0;
 
         public ViewPointController()
         {
@@ -143,28 +157,15 @@ public class controller : MonoBehaviour
             }
         }
 
-        // Make sure angle x is in [-180, 180]
-        private float Normalize(float x)
-        {
-            while (x > 180) x -= 360;
-            while (x < -180) x += 360;
-            return x;
-        }
-
-
         // Set transform and rendering of PIP board
         private void RendBoard(GameObject board, GameObject camera, Vector3 dir, controller father)
         {
-            dir.x = Normalize(dir.x);
-            dir.y = Normalize(dir.y);
-            dir.z = 0;
-
             board.GetComponentInChildren<MeshRenderer>().material.mainTexture = camera.GetComponent<Camera>().GetComponent<Camera>().targetTexture;
 
             //Disapper function
-            if (!father.alwaysShowAll && 
-                Math.Abs(dir.x) < father.disappearHorizontal && 
-                Math.Abs(dir.y) < father.disappearVertical)
+            if (!father.alwaysShowAll &&
+                Math.Abs(dir.x) < father.disappearVertical &&
+                Math.Abs(dir.y) < father.disappearHorizontal)
             {
                 return;
             }
@@ -176,16 +177,26 @@ public class controller : MonoBehaviour
             {
                 rot.z = (float)(180 / Math.PI * Math.Atan2(dir.y, dir.x));
             }
+            else
+            {
+                rot.z = 0;
+            }
             camera.transform.localEulerAngles = rot;
 
             dir.x /= 90;
             dir.y /= 180;
 
             //Perspective projection
+
             if (father.enablePerspectiveProjection)
             {
                 rot.x = dir.x * father.maxTilt;
                 rot.y = dir.y * father.maxTilt;
+            }
+            else
+            {
+                rot.x = 0;
+                rot.y = 0;
             }
             rot.z += 180;
 
@@ -201,20 +212,20 @@ public class controller : MonoBehaviour
             {
                 depth = father.maxDepth * (0.8f - dir.magnitude);
             }
-            pos.x = disX - depth;
+            pos.x = father.disX - depth;
             pos.y = pos.x * Math.Abs(dir.x) / Math.Abs(dir.y);
 
-            if (pos.y > disX / 2)
+            if (pos.y > father.disY)
             {
-                pos.x *= disX / 2 / pos.y;
-                pos.y = disX / 2;
+                pos.x *= father.disY / pos.y;
+                pos.y = father.disY;
             }
 
             if (dir.y < 0) pos.x *= -1;
             if (dir.x > 0) pos.y *= -1;
 
             //?
-            pos.z = 70;// + depth;
+            pos.z = father.disZ;// + depth;
             board.transform.localPosition = pos;
 
             //Size calculation
@@ -249,15 +260,29 @@ public class controller : MonoBehaviour
             // sort by position
             //activePoints.Sort((x, y) => Normalize((x.camera.transform.eulerAngles - mainCamera.transform.eulerAngles).y).CompareTo(Normalize((y.camera.transform.eulerAngles - mainCamera.transform.eulerAngles).y)));
 
-            int boardNum = Math.Min(activePoints.Count, 4);
+            boardNum = Math.Min(activePoints.Count, 4);
             for (int i = 0; i < 4; i++) boards[i].SetActive(false);
             for (int i = 0; i < boardNum; i++)
             {
-                Vector3 dir = activePoints[i].camera.transform.eulerAngles - mainCamera.transform.eulerAngles;
+                Vector3 dir = Normalize(activePoints[i].camera.transform.eulerAngles - mainCamera.transform.eulerAngles);
                 //dir = new Vector3(Normalize(dir.y) / 180, -Normalize(dir.x) / 180, 0);
 
                 RendBoard(boards[i], activePoints[i].camera, dir, father);
             }
+        }
+
+        public GameObject GetTargetCamera(Transform board)
+        {
+            for (int i = 0; i < boardNum; i++)
+            {
+                if (boards[i].transform == board)
+                {
+                    return activePoints[i].camera;
+                }
+            }
+            // error
+            print("error");
+            return new GameObject();
         }
     }
 
@@ -275,27 +300,46 @@ public class controller : MonoBehaviour
         LoadViews();
     }
 
-    private const float speed = 0.25f;
+    private const float dragSpeed = 1.5f;
+    private const float moveSpeed = 1;
+    private bool dragging = false;
+    private bool moving = false;
+    private GameObject targetCamera;
+
+    public void MoveTo(Transform board)
+    {
+        targetCamera = VPC.GetTargetCamera(board);
+        moving = true;
+    }
     void Update()
     {
-        Vector3 rotation = mainCamera.transform.eulerAngles;
-        if (Input.GetKey(KeyCode.W))
+        if (Input.GetMouseButton(0))
         {
-            rotation.x -= speed;
+            moving = false;
+            if (!dragging) dragging = true;
+            else
+            {
+                mainCamera.transform.localEulerAngles += new Vector3(Input.GetAxis("Mouse Y") * dragSpeed, Input.GetAxis("Mouse X") * -dragSpeed, 0);
+            }
         }
-        if (Input.GetKey(KeyCode.S))
+        else
         {
-            rotation.x += speed;
+            dragging = false;
         }
-        if (Input.GetKey(KeyCode.A))
+
+        if (moving)
         {
-            rotation.y -= speed;
+            Vector3 vec = Normalize(targetCamera.transform.localEulerAngles - mainCamera.transform.localEulerAngles);
+            if (vec.magnitude <= moveSpeed)
+            {
+                mainCamera.transform.localEulerAngles = targetCamera.transform.localEulerAngles;
+                moving = false;
+            }
+            else
+            {
+                mainCamera.transform.localEulerAngles += moveSpeed * Vector3.Normalize(vec);
+            }
         }
-        if (Input.GetKey(KeyCode.D))
-        {
-            rotation.y += speed;
-        }
-        mainCamera.transform.eulerAngles = rotation;
 
         if (Input.GetKeyDown(KeyCode.Alpha0))
         {
@@ -317,7 +361,7 @@ public class controller : MonoBehaviour
         {
             enableScale = !enableScale;
         }
-        
+
         VPC.Update(timer, mainCamera, this);
         if (videoPlayer.GetComponent<VideoPlayer>().isPlaying)
             timer += Time.deltaTime;
