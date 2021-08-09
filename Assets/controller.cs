@@ -361,6 +361,17 @@ public class controller : MonoBehaviour
         {
             enableScale = !enableScale;
         }
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (videoPlayer.GetComponent<VideoPlayer>().isPlaying)
+            {
+                videoPlayer.GetComponent<VideoPlayer>().Pause();
+            }
+            else
+            {
+                videoPlayer.GetComponent<VideoPlayer>().Play();
+            }
+        }
 
         VPC.Update(timer, mainCamera, this);
         if (videoPlayer.GetComponent<VideoPlayer>().isPlaying)
