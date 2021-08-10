@@ -33,12 +33,12 @@ public class controller : MonoBehaviour
 
     private class TimePoint
     {
-        public float time;
+        public float frame;
         public Vector3 pos;
         public float fov;
         public TimePoint(float frame, float posx, float posy, float fov)
         {
-            this.time = frame / framerate;
+            this.frame = frame;
             float px = (posx - width / 2) / (width / 4);
             float qx = 0;
             if (px > 1) qx = (float)(Math.Atan(px - 1.5) / (Math.PI / 4)) + 1.5f;
@@ -72,9 +72,9 @@ public class controller : MonoBehaviour
 
         // Update content of camera
         // returns false if not start yet or has ended
-        public bool Check(float time)
+        public bool Check(float frame)
         {
-            while (state < timePoints.Length && time >= timePoints[state].time) state++;
+            while (state < timePoints.Length && frame >= timePoints[state].frame) state++;
             if (state == 0) return false;
             if (state == timePoints.Length)
             {
@@ -82,8 +82,7 @@ public class controller : MonoBehaviour
                 Destroy(cameraWrapper);
                 return false;
             }
-            float k = (time - timePoints[state - 1].time) / (timePoints[state].time - timePoints[state - 1].time);
-            
+            float k = (frame - timePoints[state - 1].frame) / (timePoints[state].frame - timePoints[state - 1].frame);
             camera.transform.localEulerAngles =
                 timePoints[state - 1].pos + k * (timePoints[state].pos - timePoints[state - 1].pos) + new Vector3(0, 0, camera.transform.localEulerAngles.z);
             camera.GetComponent<Camera>().fieldOfView = 90;
@@ -229,17 +228,17 @@ public class controller : MonoBehaviour
             board.transform.localScale = scale;
         }
 
-        public void Update(float timer, GameObject mainCamera, controller father)
+        public void Update(float frame, GameObject mainCamera, controller father)
         {
             // Remove or add cameras
             for (int i = 0; i < activePoints.Count; i++)
             {
-                if (!activePoints[i].Check(timer))
+                if (!activePoints[i].Check(frame))
                     activePoints.RemoveAt(i--);
             }
             for (int i = 0; i < viewPoints.Count; i++)
             {
-                if (viewPoints[i].Check(timer))
+                if (viewPoints[i].Check(frame))
                 {
                     activePoints.Add(viewPoints[i]);
                     viewPoints.RemoveAt(i--);
@@ -260,9 +259,6 @@ public class controller : MonoBehaviour
             }
         }
     }
-
-    private float timer = 0;
-
 
     private void LoadViews()
     {
@@ -318,8 +314,6 @@ public class controller : MonoBehaviour
             enableScale = !enableScale;
         }
         
-        VPC.Update(timer, mainCamera, this);
-        if (videoPlayer.GetComponent<VideoPlayer>().isPlaying)
-            timer += Time.deltaTime;
+        VPC.Update(videoPlayer.GetComponent<VideoPlayer>().frame, mainCamera, boardSize, boardDis);
     }
 }
