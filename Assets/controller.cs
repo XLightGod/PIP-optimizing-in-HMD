@@ -68,7 +68,7 @@ public class controller : MonoBehaviour
 
             cameraWrapper = new GameObject("CameraWrapper");
             cameraWrapper.transform.parent = controller;
-            cameraWrapper.transform.localEulerAngles = new Vector3(0, 90, 0);
+            cameraWrapper.transform.localEulerAngles = new Vector3(0, -90, 0);
             camera = Instantiate(cameraTemplate, cameraWrapper.transform);
             camera.GetComponent<Camera>().targetTexture = new RenderTexture(500, 500, 24);
         }
@@ -156,12 +156,12 @@ public class controller : MonoBehaviour
             // X is useless if equals to 0
             float X = 0f, Y = boardDis;
             //float K0 = fov / 2;
-            float K0 = 60 / 2;
+            float K0 = 85 / 2;
             float K = K0 - (float)(Math.Asin(X * Math.Sin(K0 / 180 * Math.PI) / (X + Y)) / Math.PI * 180);
 
             float tx = (float)((X + Y) * Math.Sin(dir.x * K / 180 * Math.PI));
             float ty = (float)(Math.Abs((X + Y) * Math.Cos(dir.x * K / 180 * Math.PI)) - X);
-            board.transform.localPosition = new Vector3(tx, -0.5f, ty);
+            board.transform.localPosition = new Vector3(tx, -0.45f, ty);
             board.transform.localEulerAngles = new Vector3(42.5f, dir.x * K, 0);
             board.transform.localScale = new Vector3(boardSize, boardSize, 0.01f);
 
@@ -202,11 +202,11 @@ public class controller : MonoBehaviour
             activePoints.Sort((x, y) => x.dir.y.CompareTo(y.dir.y));
 
             // suppose that at most 2 pips' x are the same
-            const float threshold = 60;//С�ڸ�ֵ����
+            const float threshold = 85;//С�ڸ�ֵ����
             if (activePoints.Count >= 2) {
                 float dist = activePoints[0].dir.y + 360 - activePoints[activePoints.Count - 1].dir.y;
                 if (dist < threshold) {
-                    activePoints[activePoints.Count - 1].dir -= new Vector3(0, (threshold - dist) / 2, 0);
+                    activePoints[activePoints.Count - 1].dir -= new Vector3(0, (threshold - dist) / 3, 0);
                     activePoints[0].dir += new Vector3(0, (threshold - dist) / 2, 0);
                 }
                 for (int i = 0; i < activePoints.Count - 1; i++) {
