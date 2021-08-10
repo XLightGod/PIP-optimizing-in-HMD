@@ -24,12 +24,12 @@ public class controller : MonoBehaviour
 
     private class TimePoint
     {
-        public float time;
+        public float frame;
         public Vector3 pos;
         public float fov;
         public TimePoint(float frame, float posx, float posy, float fov)
         {
-            this.time = frame / framerate;
+            this.frame = frame;
             float px = (posx - width / 2) / (width / 4);
             float qx = 0;
             if (px > 1) qx = (float)(Math.Atan(px - 1.5) / (Math.PI / 4)) + 1.5f;
@@ -64,9 +64,9 @@ public class controller : MonoBehaviour
 
         // Update content of camera
         // returns false if not start yet or has ended
-        public bool Check(float time)
+        public bool Check(float frame)
         {
-            while (state < timePoints.Length && time >= timePoints[state].time) state++;
+            while (state < timePoints.Length && frame >= timePoints[state].frame) state++;
             if (state == 0) return false;
             if (state == timePoints.Length)
             {
@@ -74,7 +74,7 @@ public class controller : MonoBehaviour
                 Destroy(cameraWrapper);
                 return false;
             }
-            float k = (time - timePoints[state - 1].time) / (timePoints[state].time - timePoints[state - 1].time);
+            float k = (frame - timePoints[state - 1].frame) / (timePoints[state].frame - timePoints[state - 1].frame);
             camera.transform.localEulerAngles =
                 timePoints[state - 1].pos + k * (timePoints[state].pos - timePoints[state - 1].pos);
             camera.GetComponent<Camera>().fieldOfView =
@@ -178,17 +178,17 @@ public class controller : MonoBehaviour
             arrow.transform.localScale = new Vector3(0.2f, 0.2f, 1);
         }
 
-        public void Update(float timer, GameObject mainCamera, float boardSize, float boardDis)
+        public void Update(float frame, GameObject mainCamera, float boardSize, float boardDis)
         {
             // Remove or add cameras
             for (int i = 0; i < activePoints.Count; i++)
             {
-                if (!activePoints[i].Check(timer))
+                if (!activePoints[i].Check(frame))
                     activePoints.RemoveAt(i--);
             }
             for (int i = 0; i < viewPoints.Count; i++)
             {
-                if (viewPoints[i].Check(timer))
+                if (viewPoints[i].Check(frame))
                 {
                     activePoints.Add(viewPoints[i]);
                     viewPoints.RemoveAt(i--);
@@ -202,7 +202,7 @@ public class controller : MonoBehaviour
             activePoints.Sort((x, y) => x.dir.y.CompareTo(y.dir.y));
 
             // suppose that at most 2 pips' x are the same
-            const float threshold = 60;//小于该值不动
+            const float threshold = 60;//小锟节革拷值锟斤拷锟斤拷
             if (activePoints.Count >= 2) {
                 float dist = activePoints[0].dir.y + 360 - activePoints[activePoints.Count - 1].dir.y;
                 if (dist < threshold) {
@@ -223,7 +223,7 @@ public class controller : MonoBehaviour
             for (int i = 0; i < boardNum; i++)
             {
                 Vector3 dir = activePoints[i].dir;
-                if (Math.Abs(dir.y) < mainCamera.GetComponent<Camera>().fieldOfView / 2) continue;//显示条件
+                if (Math.Abs(dir.y) < mainCamera.GetComponent<Camera>().fieldOfView / 2) continue;//锟斤拷示锟斤拷锟斤拷
                 dir = new Vector3(dir.y / 180, -dir.x / 180, 0);
 
                 RendArrow(arrows[i], dir);
@@ -253,8 +253,6 @@ public class controller : MonoBehaviour
     private const float speed = 0.25f;
     void Update()
     {
-        VPC.Update(timer, mainCamera, boardSize, boardDis);
-        if (videoPlayer.GetComponent<VideoPlayer>().isPlaying)
-            timer += Time.deltaTime;
+        VPC.Update(videoPlayer.GetComponent<VideoPlayer>().frame, mainCamera, boardSize, boardDis);
     }
 }
