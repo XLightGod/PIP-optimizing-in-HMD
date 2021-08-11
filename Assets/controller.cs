@@ -100,8 +100,8 @@ public class controller : MonoBehaviour
     private class ViewPointController
     {
         private List<ViewPoint> viewPoints, activePoints;
-        private GameObject[] boards = new GameObject[8];
-        private GameObject[] arrows = new GameObject[8];
+        private GameObject[] boards = new GameObject[4];
+        private GameObject[] arrows = new GameObject[4];
         private int boardNum = 0;
 
         public ViewPointController()
@@ -113,7 +113,7 @@ public class controller : MonoBehaviour
         // Create Unity objects
         public void Init(GameObject boardTemplate, GameObject arrowTemplate, Transform mainCamera)
         {
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < 4; i++)
             {
                 boards[i] = Instantiate(boardTemplate, mainCamera);
                 arrows[i] = Instantiate(arrowTemplate, boards[i].transform);
@@ -196,40 +196,69 @@ public class controller : MonoBehaviour
             }
 
             // sort by position
-            for (int i = 0; i < activePoints.Count; i++) {
+            for (int i = 0; i < activePoints.Count; i++)
+            {
                 activePoints[i].dir = Normalize(activePoints[i].camera.transform.eulerAngles - mainCamera.transform.eulerAngles);
             }
+            activePoints.Sort((x, y) => Math.Abs(x.dir.y).CompareTo(Math.Abs(y.dir.y)));
+            
+            float Vfov = mainCamera.GetComponent<Camera>().fieldOfView;
+            float Hfov = Camera.VerticalToHorizontalFieldOfView(Vfov, mainCamera.GetComponent<Camera>().aspect);
+            for (int i = 0; i < activePoints.Count; i++)
+            {
+                Vector3 dir = activePoints[i].dir;
+                if (Math.Abs(dir.x) < Vfov / 2 && Math.Abs(dir.y) < Hfov / 2)
+                {
+                    viewPoints.Add(activePoints[i]);
+                    activePoints.RemoveAt(i--);
+                }
+            }
+            boardNum = Math.Min(activePoints.Count, 4);
+            for (int i = boardNum; i < activePoints.Count; i++)
+            {
+                viewPoints.Add(activePoints[i]);
+                activePoints.RemoveAt(i--);
+            }
+
             activePoints.Sort((x, y) => x.dir.y.CompareTo(y.dir.y));
 
-            // suppose that at most 2 pips' x are the same
             const float threshold = 85;//С�ڸ�ֵ����
-            if (activePoints.Count >= 2) {
-                float dist = activePoints[0].dir.y + 360 - activePoints[activePoints.Count - 1].dir.y;
-                if (dist < threshold) {
-                    activePoints[activePoints.Count - 1].dir -= new Vector3(0, (threshold - dist) / 3, 0);
-                    activePoints[0].dir += new Vector3(0, (threshold - dist) / 2, 0);
-                }
-                for (int i = 0; i < activePoints.Count - 1; i++) {
-                    dist = activePoints[i + 1].dir.y - activePoints[i].dir.y;
-                    if (dist < threshold) {
-                        activePoints[i].dir -= new Vector3(0, (threshold - dist) / 2, 0);
-                        activePoints[i + 1].dir += new Vector3(0, (threshold - dist) / 2, 0);
+            if (boardNum >= 2)
+            {
+                for (int i = boardNum - 1; i >= 0; i--)
+                {
+                    int right = i, len = 1;
+                    for(;;)
+                    {
+                        for(;right + 1 < boardNum; right = right + 1)
+                        {
+                            float dist = activePoints[right + 1].dir.y - activePoints[right].dir.y;
+                            if (dist >= ((float)len + 1) / 2 * threshold) break;
+                        }
+                        int newLen = (right - i + boardNum) % boardNum + 1;
+                        if (len == newLen) break;
+                        len = newLen;
+                    }
+                    float pos1 = Normalize(activePoints[i + (len - 1) / 2].camera.transform.eulerAngles - mainCamera.transform.eulerAngles).y;
+                    float pos2 = Normalize(activePoints[i + len / 2].camera.transform.eulerAngles - mainCamera.transform.eulerAngles).y;
+                    float center = (pos1 + pos2) / 2;
+                    if (center + (((float)len - 1) / 2) * threshold > 180) {
+                        center -= center + (((float)len - 1) / 2) * threshold - 180;
+                    }
+                    for (int j = 0; j < len; j++)
+                    {
+                        Vector3 dir = activePoints[i + j].dir;
+                        dir.y = (center + (j - ((float)len - 1) / 2) * threshold);
+                        activePoints[i + j].dir = dir;
                     }
                 }
             }
 
-            boardNum = Math.Min(activePoints.Count, 4);
-            for (int i = 0; i < 8; i++) boards[i].SetActive(false);
+            for (int i = 0; i < 4; i++) boards[i].SetActive(false);
             for (int i = 0; i < boardNum; i++)
             {
-                Vector3 dir = Normalize(activePoints[i].camera.transform.eulerAngles - mainCamera.transform.eulerAngles);
-                float Vfov = mainCamera.GetComponent<Camera>().fieldOfView;
-                float Hfov = Camera.VerticalToHorizontalFieldOfView(Vfov, mainCamera.GetComponent<Camera>().aspect);
-                print(Vfov);
-                print(Hfov);
-                if (Math.Abs(dir.x) < Vfov / 2
-                    && Math.Abs(dir.y) < Hfov / 2) continue;//��ʾ����
-                dir = new Vector3(activePoints[i].dir.y / 180, -activePoints[i].dir.x / 180, 0);
+                Vector3 dir = activePoints[i].dir;
+                dir = new Vector3(dir.y / 180, -dir.x / 180, 0);
 
                 RendArrow(arrows[i], dir);
                 //RendArrow(arrows[i + boardNum], dir);
@@ -250,9 +279,6 @@ public class controller : MonoBehaviour
             return new GameObject();
         }
     }
-
-    private float timer = 0;
-
 
     private void LoadViews()
     {
