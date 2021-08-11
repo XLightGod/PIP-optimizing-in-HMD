@@ -222,15 +222,20 @@ public class controller : MonoBehaviour
             for (int i = 0; i < 8; i++) boards[i].SetActive(false);
             for (int i = 0; i < boardNum; i++)
             {
-                Vector3 dir = activePoints[i].dir;
-                if (Math.Abs(dir.y) < mainCamera.GetComponent<Camera>().fieldOfView / 2) continue;//��ʾ����
-                dir = new Vector3(dir.y / 180, -dir.x / 180, 0);
+                Vector3 dir = Normalize(activePoints[i].camera.transform.eulerAngles - mainCamera.transform.eulerAngles);
+                float Vfov = mainCamera.GetComponent<Camera>().fieldOfView;
+                float Hfov = Camera.VerticalToHorizontalFieldOfView(Vfov, mainCamera.GetComponent<Camera>().aspect);
+                print(Vfov);
+                print(Hfov);
+                if (Math.Abs(dir.x) < Vfov / 2
+                    && Math.Abs(dir.y) < Hfov / 2) continue;//��ʾ����
+                dir = new Vector3(activePoints[i].dir.y / 180, -activePoints[i].dir.x / 180, 0);
 
                 RendArrow(arrows[i], dir);
                 //RendArrow(arrows[i + boardNum], dir);
                 RendBoard(boards[i], activePoints[i].camera, dir, mainCamera.GetComponent<Camera>().fieldOfView, boardSize, boardDis);
-                if (dir.x < 0) dir.x += 2;
-                else dir.x -= 2;
+                //if (dir.x < 0) dir.x += 2;
+                //else dir.x -= 2;
                 //RendBoard(boards[i + boardNum], activePoints[i].camera, dir, mainCamera.GetComponent<Camera>().fieldOfView, boardSize, boardDis);
             }
         }
