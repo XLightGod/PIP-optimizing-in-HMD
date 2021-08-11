@@ -68,7 +68,7 @@ public class controller : MonoBehaviour
 
             cameraWrapper = new GameObject("CameraWrapper");
             cameraWrapper.transform.parent = controller;
-            cameraWrapper.transform.localEulerAngles = new Vector3(0, 90, 0);
+            cameraWrapper.transform.localEulerAngles = new Vector3(0, -90, 0);
             camera = Instantiate(cameraTemplate, cameraWrapper.transform);
             camera.GetComponent<Camera>().targetTexture = new RenderTexture(500, 500, 24);
         }
@@ -156,7 +156,7 @@ public class controller : MonoBehaviour
             // X is useless if equals to 0
             float X = 0f, Y = boardDis;
             //float K0 = fov / 2;
-            float K0 = 60 / 2;
+            float K0 = 80 / 2;
             float K = K0 - (float)(Math.Asin(X * Math.Sin(K0 / 180 * Math.PI) / (X + Y)) / Math.PI * 180);
 
             float tx = (float)((X + Y) * Math.Sin(dir.x * K / 180 * Math.PI));
@@ -202,7 +202,7 @@ public class controller : MonoBehaviour
             activePoints.Sort((x, y) => x.dir.y.CompareTo(y.dir.y));
 
             // suppose that at most 2 pips' x are the same
-            const float threshold = 60;//С�ڸ�ֵ����
+            const float threshold = 80;//display range
             if (activePoints.Count >= 2) {
                 float dist = activePoints[0].dir.y + 360 - activePoints[activePoints.Count - 1].dir.y;
                 if (dist < threshold) {
@@ -223,7 +223,7 @@ public class controller : MonoBehaviour
             for (int i = 0; i < boardNum; i++)
             {
                 Vector3 dir = activePoints[i].dir;
-                if (Math.Abs(dir.y) < mainCamera.GetComponent<Camera>().fieldOfView / 2) continue;//��ʾ����
+                if (Math.Abs(dir.y) < mainCamera.GetComponent<Camera>().fieldOfView / 4) continue;//board spacing
                 dir = new Vector3(dir.y / 180, -dir.x / 180, 0);
 
                 RendArrow(arrows[i], dir);
