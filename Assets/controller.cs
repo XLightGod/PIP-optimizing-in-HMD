@@ -372,6 +372,6 @@ public class controller : MonoBehaviour
             }
         }
 
-        VPC.Update(videoPlayer.GetComponent<VideoPlayer>().frame, mainCamera, boardSize, boardDis);
+        VPC.Update(videoPlayer.GetComponent<VideoPlayer>().frame, mainCamera, this);
     }
 }
