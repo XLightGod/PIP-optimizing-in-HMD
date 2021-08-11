@@ -314,6 +314,6 @@ public class controller : MonoBehaviour
             enableScale = !enableScale;
         }
         
-        VPC.Update(videoPlayer.GetComponent<VideoPlayer>().frame, mainCamera, boardSize, boardDis);
+        VPC.Update(videoPlayer.GetComponent<VideoPlayer>().frame, mainCamera, this);
     }
 }
