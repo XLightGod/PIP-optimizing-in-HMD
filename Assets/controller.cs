@@ -160,15 +160,16 @@ public class controller : MonoBehaviour
 
             // some confusing calculation
             // X is useless if equals to 0
-            float X = 0f, Y = boardDis;
+            float X = 3f, Y = boardDis;
             //float K0 = fov / 2;
             float K0 = 85 / 2;
             float K = K0 - (float)(Math.Asin(X * Math.Sin(K0 / 180 * Math.PI) / (X + Y)) / Math.PI * 180);
+            
 
             float tx = (float)((X + Y) * Math.Sin(dir.x * K / 180 * Math.PI));
             float ty = (float)(Math.Abs((X + Y) * Math.Cos(dir.x * K / 180 * Math.PI)) - X);
             board.transform.localPosition = new Vector3(tx, -0.45f, ty);
-            board.transform.localEulerAngles = new Vector3(42.5f, dir.x * K, 0);
+            board.transform.localEulerAngles = new Vector3(42.5f, dir.x * K0, 0);
             board.transform.localScale = new Vector3(boardSize, boardSize, 0.01f);
 
             board.SetActive(true);
