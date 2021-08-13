@@ -42,7 +42,7 @@ def bfs(x_, y_):
         x1 = (x0 - 512) * pi / 512
         y1 = (y0 - 256) * pi / 512
         theta = acos(cos(x-x1) * cos(y) * cos(y1) + sin(y) * sin(y1))
-        if round(theta / pi * 180) == fov:
+        if round(theta / pi * 360) == fov:
             cv2.circle(img, (x0, y0), 0, (0, 0, 255), thickness=-1)
             queue.append((x0 - 1, y0))
             queue.append((x0 + 1, y0))
@@ -71,10 +71,10 @@ def loadImg():
 
         global flag
         flag = {}
-        if py - round(fov * 512 / 180) >= 0:
-            bfs(px, py - round(fov * 512 / 180))
-        elif py + round(fov * 512 / 180) < 512:
-            bfs(px, py + round(fov * 512 / 180)) 
+        if py - round(fov * 256 / 180) >= 0:
+            bfs(px, py - round(fov * 256 / 180))
+        elif py + round(fov * 256 / 180) < 512:
+            bfs(px, py + round(fov * 256 / 180)) 
             
     
     cv2.imshow("image", img)
