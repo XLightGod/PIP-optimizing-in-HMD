@@ -54,11 +54,17 @@ public class controller : MonoBehaviour
             this.frame = frame;
             float px = (posx - width / 2) / (width / 4);
             float qx = 0;
-            if (px > 1) qx = (float)(Math.Atan(px - 1.5) / (Math.PI / 4)) + 1.5f;
-            else if (px < -1) qx = (float)(Math.Atan(px + 1.5) / (Math.PI / 4)) - 1.5f;
-            else if (px > 0) qx = (float)(Math.Atan(px - 0.5) / (Math.PI / 4)) + 0.5f;
-            else if (px < -0) qx = (float)(Math.Atan(px + 0.5) / (Math.PI / 4)) - 0.5f;
-            this.pos = new Vector3((posy - height / 2) / (height / 2) * 90f, qx * 90f, 0);
+            if (px > 1) qx = (float)(Math.Atan(2 * (px - 1.5)) / (Math.PI / 2)) + 1.5f;
+            else if (px < -1) qx = (float)(Math.Atan(2 * (px + 1.5)) / (Math.PI / 2)) - 1.5f;
+            else if (px > 0) qx = (float)(Math.Atan(2 * (px - 0.5)) / (Math.PI / 2)) + 0.5f;
+            else qx = (float)(Math.Atan(2 * (px + 0.5)) / (Math.PI / 2)) - 0.5f;
+
+            float py = (posy - height / 2) / (height / 2);
+            float qy = 0;
+            if (py > 0) qy = (float)(Math.Atan(2 * (py - 0.5)) / (Math.PI / 2)) + 0.5f;
+            else qy = (float)(Math.Atan(2 * (py + 0.5)) / (Math.PI / 2)) - 0.5f;
+
+            this.pos = new Vector3(qy * 90f, qx * 90f, 0);
             this.fov = Math.Max(fov, 10);
         }
     }
