@@ -212,7 +212,7 @@ public class controller : MonoBehaviour
             }
             activePoints.Sort((x, y) => Math.Abs(x.dir.y).CompareTo(Math.Abs(y.dir.y)));
 
-            if (activePoints.Count > 0) // adaptive scalling
+            if (activePoints.Count > 0) // adaptive scaling
             {
                 float dis = activePoints[0].dir.magnitude - activePoints[0].camera.GetComponent<Camera>().fieldOfView / 2;
                 for (int i = 1; i < activePoints.Count; i++)
