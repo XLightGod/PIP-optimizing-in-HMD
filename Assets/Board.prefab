@@ -108,7 +108,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 667a62dfa3193a645a5dad38aedf9584, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  controller: {fileID: 0}
 --- !u!1 &4091033938204279133
 GameObject:
   m_ObjectHideFlags: 0
@@ -212,7 +211,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5771342467813615106}
-  m_Layer: 0
+  m_Layer: 1
   m_Name: Board
   m_TagString: Untagged
   m_Icon: {fileID: 0}
