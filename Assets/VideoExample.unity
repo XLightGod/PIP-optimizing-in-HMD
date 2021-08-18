@@ -495,7 +495,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c27767748ccead44da9fdffb47762df5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  boardSize: 0.18
+  boardSize: 0.15
   boardDis: 0.8
   mainCamera: {fileID: 1351756877}
   videoPlayer: {fileID: 2129898225}
