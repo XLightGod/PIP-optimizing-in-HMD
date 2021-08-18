@@ -84,7 +84,7 @@ public class controller : MonoBehaviour
 
             cameraWrapper = new GameObject("CameraWrapper");
             cameraWrapper.transform.parent = controller;
-            cameraWrapper.transform.localEulerAngles = new Vector3(0, -90, 0);
+            cameraWrapper.transform.localEulerAngles = new Vector3(0, 90, 0);
             camera = Instantiate(cameraTemplate, cameraWrapper.transform);
             camera.GetComponent<Camera>().targetTexture = new RenderTexture(500, 500, 24);
         }
@@ -211,13 +211,7 @@ public class controller : MonoBehaviour
 
             Vector3 pos = Vector3.zero;
 
-            //Depth
-            float depth = 0;
-            if (father.enableDepth)
-            {
-                depth = father.maxDepth * (0.8f - dir.magnitude);
-            }
-            pos.x = father.disX - depth;
+            pos.x = father.disX;
             pos.y = pos.x * Math.Abs(dir.x) / Math.Abs(dir.y);
 
             if (pos.y > father.disY)
@@ -229,8 +223,13 @@ public class controller : MonoBehaviour
             if (dir.y < 0) pos.x *= -1;
             if (dir.x > 0) pos.y *= -1;
 
-            //?
-            pos.z = father.disZ;// + depth;
+            //Depth
+            float depth = 0;
+            if (father.enableDepth)
+            {
+                depth = father.maxDepth * (1.414f - dir.magnitude);
+            }
+            pos.z = father.disZ + depth;
             board.transform.localPosition = pos;
 
             //Size calculation
