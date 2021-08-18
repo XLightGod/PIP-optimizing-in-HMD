@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: VideoMaterial
-  m_Shader: {fileID: 4800000, guid: 0f79d188671c3b1429c9bd589ff74510, type: 3}
+  m_Shader: {fileID: 4800000, guid: 62c4ed9e117b70a4785fbaa67d494ebb, type: 3}
   m_ShaderKeywords: _MAPPING_6_FRAMES_LAYOUT _SUNDISK_HIGH_QUALITY
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
