@@ -222,7 +222,7 @@ public class controller : MonoBehaviour
                 float minDis = 30;
                 float maxDis = Vfov / 2;
                 dis = Math.Min(maxDis, Math.Max(minDis, dis));
-                boardSize += ((dis - minDis) / (maxDis - minDis)) * boardSize * 0.5f;
+                //boardSize += ((dis - minDis) / (maxDis - minDis)) * boardSize * 0.5f;
             }
 
 
