@@ -84,7 +84,7 @@ public class controller : MonoBehaviour
 
             cameraWrapper = new GameObject("CameraWrapper");
             cameraWrapper.transform.parent = controller;
-            cameraWrapper.transform.localEulerAngles = new Vector3(0, 90, 0);
+            cameraWrapper.transform.localEulerAngles = new Vector3(0, -90, 0);
             camera = Instantiate(cameraTemplate, cameraWrapper.transform);
             camera.GetComponent<Camera>().targetTexture = new RenderTexture(500, 500, 24);
         }
@@ -165,12 +165,15 @@ public class controller : MonoBehaviour
         // Set transform and rendering of PIP board
         private void RendBoard(GameObject board, GameObject camera, Vector3 dir, controller father)
         {
+            float Vfov = father.mainCamera.GetComponent<Camera>().fieldOfView;
+            float Hfov = Camera.VerticalToHorizontalFieldOfView(Vfov, father.mainCamera.GetComponent<Camera>().aspect);
+
             board.GetComponentInChildren<MeshRenderer>().material.mainTexture = camera.GetComponent<Camera>().GetComponent<Camera>().targetTexture;
 
             //Disapper function
             if (!father.alwaysShowAll &&
-                Math.Abs(dir.x) < father.disappearVertical &&
-                Math.Abs(dir.y) < father.disappearHorizontal)
+                Math.Abs(dir.x) < Vfov / 2 &&
+                Math.Abs(dir.y) < Hfov / 2)
             {
                 return;
             }

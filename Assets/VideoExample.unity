@@ -38,7 +38,8 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.31245705, g: 0.3170029, b: 0.36225772, a: 1}
+  m_IndirectSpecularColor: {r: 0.0026947334, g: 0.00031348306, b: 0.000018975312,
+    a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -401,14 +402,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 209142636}
-  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1351756883}
   m_Father: {fileID: 1976577094}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
 --- !u!4 &1313374443 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 420908, guid: 4d293c8e162f3874b982baadd71153d2,
@@ -690,7 +691,7 @@ MonoBehaviour:
   maxTilt: 90
   enableDepth: 1
   maxDepth: 150
-  disX: 240
+  disX: 230
   disY: 100
   disZ: 200
   mainCamera: {fileID: 1351756877}
@@ -744,7 +745,7 @@ VideoPlayer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2129898225}
   m_Enabled: 1
-  m_VideoClip: {fileID: 32900000, guid: eb8ce2d1d7939054a997125900eca939, type: 3}
+  m_VideoClip: {fileID: 32900000, guid: f1c9c8150adc1a6439bf2c2a8f8b4053, type: 3}
   m_TargetCameraAlpha: 1
   m_TargetCamera3DLayout: 0
   m_TargetCamera: {fileID: 0}
