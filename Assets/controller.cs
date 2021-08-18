@@ -179,7 +179,7 @@ public class controller : MonoBehaviour
         private void RendArrow(GameObject arrow, Vector3 dir)
         {
             float angle = (float)(Math.Atan2(dir.x, dir.y) * 180 / Math.PI);
-            float dis = 0.33f + dir.magnitude * 0.67f;
+            float dis = 0.9f * (0.33f + dir.magnitude * 0.67f);
             arrow.transform.localPosition = new Vector3(dis * (float)Math.Sin(Math.Atan2(dir.x, dir.y)), dis * (float)Math.Cos(Math.Atan2(dir.x, dir.y)), 0);
             arrow.transform.localEulerAngles = new Vector3(0, 0, -angle);
             arrow.transform.localScale = new Vector3(0.2f, 0.2f, 1);
