@@ -187,6 +187,9 @@ public class controller : MonoBehaviour
 
         public void Update(float frame, GameObject mainCamera, float boardSize, float boardDis)
         {
+            float Vfov = mainCamera.GetComponent<Camera>().fieldOfView;
+            float Hfov = Camera.VerticalToHorizontalFieldOfView(Vfov, mainCamera.GetComponent<Camera>().aspect);
+
             // Remove or add cameras
             for (int i = 0; i < activePoints.Count; i++)
             {
@@ -208,9 +211,21 @@ public class controller : MonoBehaviour
                 activePoints[i].dir = Normalize(activePoints[i].camera.transform.eulerAngles - mainCamera.transform.eulerAngles);
             }
             activePoints.Sort((x, y) => Math.Abs(x.dir.y).CompareTo(Math.Abs(y.dir.y)));
-            
-            float Vfov = mainCamera.GetComponent<Camera>().fieldOfView;
-            float Hfov = Camera.VerticalToHorizontalFieldOfView(Vfov, mainCamera.GetComponent<Camera>().aspect);
+
+            if (activePoints.Count > 0) // adaptive scalling
+            {
+                float dis = activePoints[0].dir.magnitude - activePoints[0].camera.GetComponent<Camera>().fieldOfView / 2;
+                for (int i = 1; i < activePoints.Count; i++)
+                {
+                    dis = Math.Min(dis, activePoints[i].dir.magnitude - activePoints[i].camera.GetComponent<Camera>().fieldOfView / 2);
+                }
+                float minDis = 30;
+                float maxDis = Vfov / 2;
+                dis = Math.Min(maxDis, Math.Max(minDis, dis));
+                boardSize += ((dis - minDis) / (maxDis - minDis)) * boardSize * 0.5f;
+            }
+
+
             for (int i = 0; i < activePoints.Count; i++)
             {
                 Vector3 dir = activePoints[i].dir;
