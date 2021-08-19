@@ -179,7 +179,7 @@ public class controller : MonoBehaviour
         private void RendArrow(GameObject arrow, Vector3 dir)
         {
             float angle = (float)(Math.Atan2(dir.x, dir.y) * 180 / Math.PI);
-            float dis = 0.9f * (0.33f + dir.magnitude * 0.67f);
+            float dis = 0.7f * (0.7f + dir.magnitude * 0.3f);
             arrow.transform.localPosition = new Vector3(dis * (float)Math.Sin(Math.Atan2(dir.x, dir.y)), dis * (float)Math.Cos(Math.Atan2(dir.x, dir.y)), 0);
             arrow.transform.localEulerAngles = new Vector3(0, 0, -angle);
             arrow.transform.localScale = new Vector3(0.2f, 0.2f, 1);
@@ -212,7 +212,8 @@ public class controller : MonoBehaviour
             }
             activePoints.Sort((x, y) => Math.Abs(x.dir.y).CompareTo(Math.Abs(y.dir.y)));
 
-            if (activePoints.Count > 0) // adaptive scaling
+            // adaptive scaling
+            if (activePoints.Count > 0)
             {
                 float dis = activePoints[0].dir.magnitude - activePoints[0].camera.GetComponent<Camera>().fieldOfView / 2;
                 for (int i = 1; i < activePoints.Count; i++)
@@ -222,7 +223,7 @@ public class controller : MonoBehaviour
                 float minDis = 30;
                 float maxDis = Vfov / 2;
                 dis = Math.Min(maxDis, Math.Max(minDis, dis));
-                boardSize += ((dis - minDis) / (maxDis - minDis)) * boardSize * 0.5f;
+                boardSize += ((dis - minDis) / (maxDis - minDis)) * boardSize * 0.25f;
             }
 
 
