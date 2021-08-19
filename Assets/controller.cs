@@ -179,7 +179,7 @@ public class controller : MonoBehaviour
         private void RendArrow(GameObject arrow, Vector3 dir)
         {
             float angle = (float)(Math.Atan2(dir.x, dir.y) * 180 / Math.PI);
-            float dis = 0.33f + dir.magnitude * 0.67f;
+            float dis = 0.7f * (0.33f + dir.magnitude * 0.67f);
             arrow.transform.localPosition = new Vector3(dis * (float)Math.Sin(Math.Atan2(dir.x, dir.y)), dis * (float)Math.Cos(Math.Atan2(dir.x, dir.y)), 0);
             arrow.transform.localEulerAngles = new Vector3(0, 0, -angle);
             arrow.transform.localScale = new Vector3(0.2f, 0.2f, 1);
@@ -244,7 +244,7 @@ public class controller : MonoBehaviour
 
             activePoints.Sort((x, y) => x.dir.y.CompareTo(y.dir.y));
 
-            const float threshold = 85;//С�ڸ�ֵ����
+            const float threshold = 100;//С�ڸ�ֵ����
             if (boardNum >= 2)
             {
                 for (int i = boardNum - 1; i >= 0; i--)
