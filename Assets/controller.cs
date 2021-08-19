@@ -179,6 +179,7 @@ public class controller : MonoBehaviour
         private void RendArrow(GameObject arrow, Vector3 dir)
         {
             float angle = (float)(Math.Atan2(dir.x, dir.y) * 180 / Math.PI);
+            // 第一个数字是最远长度；后面两个数字加起来为1，后一个表示最多能缩进去几成（也就是最后一个数字越小变化幅度越小）
             float dis = 0.7f * (0.7f + dir.magnitude * 0.3f);
             arrow.transform.localPosition = new Vector3(dis * (float)Math.Sin(Math.Atan2(dir.x, dir.y)), dis * (float)Math.Cos(Math.Atan2(dir.x, dir.y)), 0);
             arrow.transform.localEulerAngles = new Vector3(0, 0, -angle);
@@ -223,6 +224,7 @@ public class controller : MonoBehaviour
                 float minDis = 30;
                 float maxDis = Vfov / 2;
                 dis = Math.Min(maxDis, Math.Max(minDis, dis));
+                // 最后一个数字越大缩放比例越大，controller 里面的数字是最小尺寸
                 boardSize += ((dis - minDis) / (maxDis - minDis)) * boardSize * 0.25f;
             }
 
