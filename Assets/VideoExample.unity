@@ -691,7 +691,7 @@ MonoBehaviour:
   enableDepth: 1
   maxDepth: 150
   disX: 230
-  disY: 100
+  disY: 140
   disZ: 200
   mainCamera: {fileID: 1351756877}
   videoPlayer: {fileID: 2129898225}
