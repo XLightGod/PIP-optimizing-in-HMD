@@ -711,7 +711,7 @@ VideoPlayer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2129898225}
   m_Enabled: 1
-  m_VideoClip: {fileID: 32900000, guid: 1fdecdac8c699a641b07d46042a059df, type: 3}
+  m_VideoClip: {fileID: 32900000, guid: 0d58517751fd8c047840b5a424ad0d54, type: 3}
   m_TargetCameraAlpha: 1
   m_TargetCamera3DLayout: 0
   m_TargetCamera: {fileID: 0}
@@ -725,7 +725,7 @@ VideoPlayer:
   m_PlaybackSpeed: 1
   m_AudioOutputMode: 1
   m_TargetAudioSources:
-  - {fileID: 0}
+  - {fileID: 2129898228}
   m_DirectAudioVolumes:
   - 1
   m_Url: http://miku.trypticon.org/misc/decade_3d_360.mp4
