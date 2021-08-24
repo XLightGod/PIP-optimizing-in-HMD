@@ -285,9 +285,11 @@ public class controller : MonoBehaviour
                 Vector3 dir = activePoints[i].dir;
                 dir = new Vector3(dir.y / 180, -dir.x / 180, 0);
 
-                RendArrow(arrows[i], dir);
                 //RendArrow(arrows[i + boardNum], dir);
                 RendBoard(boards[i], activePoints[i].camera, dir, mainCamera.GetComponent<Camera>().fieldOfView, boardSize, boardDis);
+                dir.x -= (float)(Math.Atan2(boards[i].transform.localPosition.x, boards[i].transform.localPosition.z) / Math.PI);
+                dir.y -= (float)(Math.Atan2(boards[i].transform.localPosition.y, boards[i].transform.localPosition.z) / Math.PI);
+                RendArrow(arrows[i], dir);
                 //if (dir.x < 0) dir.x += 2;
                 //else dir.x -= 2;
                 //RendBoard(boards[i + boardNum], activePoints[i].camera, dir, mainCamera.GetComponent<Camera>().fieldOfView, boardSize, boardDis);
