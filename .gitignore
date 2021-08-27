@@ -35,3 +35,5 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+data/beyond1_output.mp4
+data/data.txt
