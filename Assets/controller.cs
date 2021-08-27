@@ -63,6 +63,7 @@ public class controller : MonoBehaviour
         // useless now
         public int importance { get; }
         public Vector3 dir { get; set; }
+        public Vector3 last_dir { get; set; }
         private int state;
         public GameObject cameraWrapper { get; }
         public GameObject camera { get; }
@@ -179,10 +180,10 @@ public class controller : MonoBehaviour
         private void RendArrow(GameObject arrow, Vector3 dir)
         {
             float angle = (float)(Math.Atan2(dir.x, dir.y) * 180 / Math.PI);
-            float dis = 0.7f * (0.33f + dir.magnitude * 0.67f);
+            arrow.transform.localScale = new Vector3(0.3f, 0.1f + 0.25f * dir.magnitude, 1);
+            float dis = 0.5f + arrow.transform.localScale.y / 2;
             arrow.transform.localPosition = new Vector3(dis * (float)Math.Sin(Math.Atan2(dir.x, dir.y)), dis * (float)Math.Cos(Math.Atan2(dir.x, dir.y)), 0);
             arrow.transform.localEulerAngles = new Vector3(0, 0, -angle);
-            arrow.transform.localScale = new Vector3(0.2f, 0.2f, 1);
         }
 
         public void Update(float frame, GameObject mainCamera, float boardSize, float boardDis)
@@ -208,7 +209,15 @@ public class controller : MonoBehaviour
             // sort by position
             for (int i = 0; i < activePoints.Count; i++)
             {
-                activePoints[i].dir = Normalize(activePoints[i].camera.transform.eulerAngles - mainCamera.transform.eulerAngles);
+                Vector3 _dir = Normalize(activePoints[i].camera.transform.eulerAngles - mainCamera.transform.eulerAngles);
+                if (_dir.y * activePoints[i].dir.y < 0 && Math.Abs(_dir.y) > 150)
+                {
+                    viewPoints.Add(activePoints[i]);
+                    activePoints.RemoveAt(i--);
+                    continue;
+                }
+                activePoints[i].last_dir = activePoints[i].dir;
+                activePoints[i].dir = _dir;
             }
             activePoints.Sort((x, y) => Math.Abs(x.dir.y).CompareTo(Math.Abs(y.dir.y)));
 
@@ -229,7 +238,7 @@ public class controller : MonoBehaviour
             for (int i = 0; i < activePoints.Count; i++)
             {
                 Vector3 dir = activePoints[i].dir;
-                if (Math.Abs(dir.x) < Vfov / 2 && Math.Abs(dir.y) < Hfov / 2)
+                if ((Math.Abs(dir.x) < Vfov / 2 && Math.Abs(dir.y) < Hfov / 2))
                 {
                     viewPoints.Add(activePoints[i]);
                     activePoints.RemoveAt(i--);
@@ -282,9 +291,11 @@ public class controller : MonoBehaviour
                 Vector3 dir = activePoints[i].dir;
                 dir = new Vector3(dir.y / 180, -dir.x / 180, 0);
 
-                RendArrow(arrows[i], dir);
                 //RendArrow(arrows[i + boardNum], dir);
                 RendBoard(boards[i], activePoints[i].camera, dir, mainCamera.GetComponent<Camera>().fieldOfView, boardSize, boardDis);
+                dir.x -= (float)(Math.Atan2(boards[i].transform.localPosition.x, boards[i].transform.localPosition.z) / Math.PI);
+                dir.y -= (float)(Math.Atan2(boards[i].transform.localPosition.y, boards[i].transform.localPosition.z) / Math.PI);
+                RendArrow(arrows[i], dir);
                 //if (dir.x < 0) dir.x += 2;
                 //else dir.x -= 2;
                 //RendBoard(boards[i + boardNum], activePoints[i].camera, dir, mainCamera.GetComponent<Camera>().fieldOfView, boardSize, boardDis);
