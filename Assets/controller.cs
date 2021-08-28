@@ -63,7 +63,6 @@ public class controller : MonoBehaviour
         // useless now
         public int importance { get; }
         public Vector3 dir { get; set; }
-        public Vector3 last_dir { get; set; }
         private int state;
         public GameObject cameraWrapper { get; }
         public GameObject camera { get; }
@@ -75,7 +74,7 @@ public class controller : MonoBehaviour
 
             cameraWrapper = new GameObject("CameraWrapper");
             cameraWrapper.transform.parent = controller;
-            cameraWrapper.transform.localEulerAngles = new Vector3(0, -90, 0);
+            cameraWrapper.transform.localEulerAngles = new Vector3(0, 90, 0);
             camera = Instantiate(cameraTemplate, cameraWrapper.transform);
             camera.GetComponent<Camera>().targetTexture = new RenderTexture(500, 500, 24);
         }
@@ -180,10 +179,11 @@ public class controller : MonoBehaviour
         private void RendArrow(GameObject arrow, Vector3 dir)
         {
             float angle = (float)(Math.Atan2(dir.x, dir.y) * 180 / Math.PI);
-            arrow.transform.localScale = new Vector3(0.3f, 0.1f + 0.25f * dir.magnitude, 1);
-            float dis = 0.5f + arrow.transform.localScale.y / 2;
+            // 第一个数字是最远长度；后面两个数字加起来为1，后一个表示最多能缩进去几成（也就是最后一个数字越小变化幅度越小）
+            float dis = 0.6f * (0.8f + dir.magnitude * 0.2f);
             arrow.transform.localPosition = new Vector3(dis * (float)Math.Sin(Math.Atan2(dir.x, dir.y)), dis * (float)Math.Cos(Math.Atan2(dir.x, dir.y)), 0);
             arrow.transform.localEulerAngles = new Vector3(0, 0, -angle);
+            arrow.transform.localScale = new Vector3(0.2f, 0.2f, 1);
         }
 
         public void Update(float frame, GameObject mainCamera, float boardSize, float boardDis)
@@ -209,15 +209,7 @@ public class controller : MonoBehaviour
             // sort by position
             for (int i = 0; i < activePoints.Count; i++)
             {
-                Vector3 _dir = Normalize(activePoints[i].camera.transform.eulerAngles - mainCamera.transform.eulerAngles);
-                if (_dir.y * activePoints[i].dir.y < 0 && Math.Abs(_dir.y) > 150)
-                {
-                    viewPoints.Add(activePoints[i]);
-                    activePoints.RemoveAt(i--);
-                    continue;
-                }
-                activePoints[i].last_dir = activePoints[i].dir;
-                activePoints[i].dir = _dir;
+                activePoints[i].dir = Normalize(activePoints[i].camera.transform.eulerAngles - mainCamera.transform.eulerAngles);
             }
             activePoints.Sort((x, y) => Math.Abs(x.dir.y).CompareTo(Math.Abs(y.dir.y)));
 
@@ -233,14 +225,14 @@ public class controller : MonoBehaviour
                 float maxDis = Vfov / 2;
                 dis = Math.Min(maxDis, Math.Max(minDis, dis));
                 // 最后一个数字越大缩放比例越大，controller 里面的数字是最小尺寸
-                boardSize += ((dis - minDis) / (maxDis - minDis)) * boardSize * 0.25f;
+                boardSize += ((dis - minDis) / (maxDis - minDis)) * boardSize * 0.15f;
             }
 
 
             for (int i = 0; i < activePoints.Count; i++)
             {
                 Vector3 dir = activePoints[i].dir;
-                if ((Math.Abs(dir.x) < Vfov / 2 && Math.Abs(dir.y) < Hfov / 2))
+                if (Math.Abs(dir.x) < Vfov / 2 && Math.Abs(dir.y) < Hfov / 2)
                 {
                     viewPoints.Add(activePoints[i]);
                     activePoints.RemoveAt(i--);
