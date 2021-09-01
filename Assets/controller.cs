@@ -317,7 +317,7 @@ public class controller : MonoBehaviour
     private void LoadViews()
     {
         VPC.Init(boardTemplate, arrowTemplate, mainCamera.transform);
-        VPC.Load("data/data.txt", cameraTemplate, transform);
+        VPC.Load("data/" + videoPlayer.GetComponent<VideoPlayer>().clip.name.Split('.')[0] + ".txt", cameraTemplate, transform);
     }
 
     void Start()
