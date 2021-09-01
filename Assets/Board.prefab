@@ -11,7 +11,8 @@ GameObject:
   - component: {fileID: 9144471388308056171}
   - component: {fileID: 4728096056281850055}
   - component: {fileID: 6707889306116938353}
-  - component: {fileID: 735468649667672462}
+  - component: {fileID: 5350220040360700977}
+  - component: {fileID: 6465039894577893221}
   m_Layer: 1
   m_Name: Cylinder
   m_TagString: Untagged
@@ -81,8 +82,20 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!136 &735468649667672462
-CapsuleCollider:
+--- !u!114 &5350220040360700977
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3123540950520882898}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 667a62dfa3193a645a5dad38aedf9584, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!65 &6465039894577893221
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -91,10 +104,9 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  m_Radius: 0.5000001
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
+  serializedVersion: 2
+  m_Size: {x: 1.0000001, y: 2.0000005, z: 1.0000005}
+  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940699}
 --- !u!1 &4091033938204279133
 GameObject:
   m_ObjectHideFlags: 0
@@ -106,7 +118,6 @@ GameObject:
   - component: {fileID: 3340090916478276364}
   - component: {fileID: 7816088023963587422}
   - component: {fileID: 1158307510387260854}
-  - component: {fileID: 802790631534240202}
   m_Layer: 1
   m_Name: Cylinder
   m_TagString: Untagged
@@ -175,20 +186,6 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!136 &802790631534240202
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4091033938204279133}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  m_Radius: 0.5000001
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
 --- !u!1 &7235676256743105626
 GameObject:
   m_ObjectHideFlags: 0

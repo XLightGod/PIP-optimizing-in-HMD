@@ -22,6 +22,16 @@ public class controller : MonoBehaviour
     const int height = 512;
     const int framerate = 30;
 
+    // Make sure angle x is in [-180, 180]
+    static private Vector3 Normalize(Vector3 v)
+    {
+        while (v.x > 180) v.x -= 360;
+        while (v.x < -180) v.x += 360;
+        while (v.y > 180) v.y -= 360;
+        while (v.y < -180) v.y += 360;
+        v.z = 0;
+        return v;
+    }
     private class TimePoint
     {
         public float frame;
@@ -143,18 +153,6 @@ public class controller : MonoBehaviour
             }
         }
 
-        // Make sure angle x is in [-180, 180]
-        private Vector3 Normalize(Vector3 v)
-        {
-            while (v.x > 180) v.x -= 360;
-            while (v.x < -180) v.x += 360;
-            while (v.y > 180) v.y -= 360;
-            while (v.y < -180) v.y += 360;
-            v.z = 0;
-            return v;
-        }
-
-
         // Set transform and rendering of PIP board
         private void RendBoard(GameObject board, GameObject camera, Vector3 dir, float fov, float boardSize, float boardDis)
         {
@@ -231,7 +229,7 @@ public class controller : MonoBehaviour
                 float minDis = 30;
                 float maxDis = Vfov / 2;
                 dis = Math.Min(maxDis, Math.Max(minDis, dis));
-                boardSize += ((dis - minDis) / (maxDis - minDis)) * boardSize * 0.5f;
+                boardSize += ((dis - minDis) / (maxDis - minDis)) * boardSize * 0.25f;
             }
 
 
@@ -253,7 +251,7 @@ public class controller : MonoBehaviour
 
             activePoints.Sort((x, y) => x.dir.y.CompareTo(y.dir.y));
 
-            const float threshold = 75;//С�ڸ�ֵ����
+            const float threshold = 90;//С�ڸ�ֵ����
             if (boardNum >= 2)
             {
                 for (int i = boardNum - 1; i >= 0; i--)
@@ -301,6 +299,19 @@ public class controller : MonoBehaviour
                 //RendBoard(boards[i + boardNum], activePoints[i].camera, dir, mainCamera.GetComponent<Camera>().fieldOfView, boardSize, boardDis);
             }
         }
+        public GameObject GetTargetCamera(Transform board)
+        {
+            for (int i = 0; i < boardNum; i++)
+            {
+                if (boards[i].transform == board)
+                {
+                    return activePoints[i].camera;
+                }
+            }
+            // error
+            print("error");
+            return new GameObject();
+        }
     }
 
     private void LoadViews()
@@ -314,9 +325,33 @@ public class controller : MonoBehaviour
         LoadViews();
     }
 
-    private const float speed = 0.25f;
+    private const float moveSpeed = 2;
+    private bool moving = false;
+    private GameObject targetCamera;
+
+    public void MoveTo(Transform board)
+    {
+        if (!moving)
+        {
+            targetCamera = VPC.GetTargetCamera(board);
+            moving = true;
+        }
+    }
     void Update()
     {
+        if (moving)
+        {
+            Vector3 vec = Normalize(new Vector3(0, (targetCamera.transform.eulerAngles - mainCamera.transform.eulerAngles).y, 0));
+            if (vec.magnitude <= moveSpeed)
+            {
+                mainCamera.transform.parent.localEulerAngles += vec.magnitude * Vector3.Normalize(vec);
+                moving = false;
+            }
+            else
+            {
+                mainCamera.transform.parent.localEulerAngles += moveSpeed * Vector3.Normalize(vec);
+            }
+        }
         VPC.Update(videoPlayer.GetComponent<VideoPlayer>().frame, mainCamera, boardSize, boardDis);
     }
 }
