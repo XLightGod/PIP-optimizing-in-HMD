@@ -74,7 +74,7 @@ public class controller : MonoBehaviour
 
             cameraWrapper = new GameObject("CameraWrapper");
             cameraWrapper.transform.parent = controller;
-            cameraWrapper.transform.localEulerAngles = new Vector3(0, 90, 0);
+            cameraWrapper.transform.localEulerAngles = new Vector3(0, -90, 0);
             camera = Instantiate(cameraTemplate, cameraWrapper.transform);
             camera.GetComponent<Camera>().targetTexture = new RenderTexture(500, 500, 24);
         }
