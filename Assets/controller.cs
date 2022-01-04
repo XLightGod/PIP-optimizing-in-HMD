@@ -75,7 +75,7 @@ public class controller : MonoBehaviour
 
             cameraWrapper = new GameObject("CameraWrapper");
             cameraWrapper.transform.parent = controller;
-            cameraWrapper.transform.localEulerAngles = new Vector3(0,-90, 0);
+            cameraWrapper.transform.localEulerAngles = new Vector3(0, -90, 0);
             camera = Instantiate(cameraTemplate, cameraWrapper.transform);
             camera.GetComponent<Camera>().targetTexture = new RenderTexture(500, 500, 24);
         }
@@ -170,7 +170,7 @@ public class controller : MonoBehaviour
             float tx = (float)((X + Y) * Math.Sin(dir.x * K / 180 * Math.PI));
             float ty = (float)(Math.Abs((X + Y) * Math.Cos(dir.x * K / 180 * Math.PI)) - X);
             board.transform.localPosition = new Vector3(tx, -0.58f, ty);
-            board.transform.localEulerAngles = new Vector3(42.5f, dir.x * K0, 0);
+            board.transform.localEulerAngles = new Vector3(0, 0, 0);
             board.transform.localScale = new Vector3(boardSize, boardSize, 0.01f);
 
             board.SetActive(true);
@@ -324,6 +324,7 @@ public class controller : MonoBehaviour
     void Start()
     {
         LoadViews();
+        Time.fixedDeltaTime = 0.1f; // log every 0.1s
     }
 
     private const float dragSpeed = 1.5f;
@@ -331,6 +332,9 @@ public class controller : MonoBehaviour
     private bool dragging = false;
     private bool moving = false;
     private GameObject targetCamera; 
+
+    // using current timestamp as log file path
+    String logFilePath = DateTime.Now.ToString("yyyyddMM-HHmmss") + ".txt";
 
     public void MoveTo(Transform board) {
         targetCamera = VPC.GetTargetCamera(board);
@@ -371,5 +375,13 @@ public class controller : MonoBehaviour
         }
 
         VPC.Update(videoPlayer.GetComponent<VideoPlayer>().frame, mainCamera, boardSize, boardDis);
+    }
+
+    void FixedUpdate()
+    {
+        using (StreamWriter writer = File.AppendText(logFilePath))
+        {
+            writer.WriteLine(Time.unscaledTime + " " + mainCamera.transform.eulerAngles.x + " " + mainCamera.transform.eulerAngles.y + " " + mainCamera.transform.eulerAngles.z);
+        }
     }
 }
