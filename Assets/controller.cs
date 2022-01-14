@@ -329,6 +329,11 @@ public class controller : MonoBehaviour
     private bool moving = false;
     private GameObject targetCamera;
 
+    
+    // using current timestamp as log file path
+    String logFilePath = DateTime.Now.ToString("yyyyddMM-HHmmss") + ".txt";
+
+
     public void MoveTo(Transform board)
     {
         if (!moving)
@@ -353,5 +358,13 @@ public class controller : MonoBehaviour
             }
         }
         VPC.Update(videoPlayer.GetComponent<VideoPlayer>().frame, mainCamera, boardSize, boardDis);
+    }
+
+        void FixedUpdate()
+    {
+        using (StreamWriter writer = File.AppendText(logFilePath))
+        {
+            writer.WriteLine(Time.unscaledTime + " " + mainCamera.transform.eulerAngles.x + " " + mainCamera.transform.eulerAngles.y + " " + mainCamera.transform.eulerAngles.z);
+        }
     }
 }
