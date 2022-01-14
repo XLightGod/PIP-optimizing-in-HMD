@@ -299,7 +299,7 @@ public class controller : MonoBehaviour
     private void LoadViews()
     {
         VPC.Init(boardTemplate, arrowTemplate, mainCamera.transform);
-        VPC.Load("data/data.txt", cameraTemplate, transform);
+        VPC.Load("data/" + videoPlayer.GetComponent<VideoPlayer>().clip.name.Split('.')[0] + ".txt", cameraTemplate, transform);
     }
 
     void Start()
@@ -312,6 +312,9 @@ public class controller : MonoBehaviour
     private bool dragging = false;
     private bool moving = false;
     private GameObject targetCamera;
+
+    // using current timestamp as log file path
+    String logFilePath = DateTime.Now.ToString("yyyyddMM-HHmmss") + ".txt";
 
     public void MoveTo(Transform board)
     {
@@ -381,5 +384,13 @@ public class controller : MonoBehaviour
         }
 
         VPC.Update(videoPlayer.GetComponent<VideoPlayer>().frame, mainCamera, this);
+    }
+    
+    void FixedUpdate()
+    {
+        using (StreamWriter writer = File.AppendText(logFilePath))
+        {
+            writer.WriteLine(Time.unscaledTime + " " + mainCamera.transform.eulerAngles.x + " " + mainCamera.transform.eulerAngles.y + " " + mainCamera.transform.eulerAngles.z);
+        }
     }
 }
