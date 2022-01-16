@@ -375,13 +375,13 @@ public class controller : MonoBehaviour
         }
 
         VPC.Update(videoPlayer.GetComponent<VideoPlayer>().frame, mainCamera, boardSize, boardDis);
-    }
-
-    void FixedUpdate()
-    {
-        using (StreamWriter writer = File.AppendText(logFilePath))
-        {
-            writer.WriteLine(Time.unscaledTime + " " + mainCamera.transform.eulerAngles.x + " " + mainCamera.transform.eulerAngles.y + " " + mainCamera.transform.eulerAngles.z);
+        
+        if (videoPlayer.GetComponent<VideoPlayer>().isPlaying) {
+            using (StreamWriter writer = File.AppendText(logFilePath))
+            {
+                writer.WriteLine(videoPlayer.GetComponent<VideoPlayer>().frame / 30.0f + " " + mainCamera.transform.eulerAngles.x + " " + mainCamera.transform.eulerAngles.y + " " + mainCamera.transform.eulerAngles.z);
+            }
         }
     }
+
 }
