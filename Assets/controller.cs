@@ -30,6 +30,15 @@ public class controller : MonoBehaviour
     const int width = 1024;
     const int height = 512;
     const int framerate = 30;
+    static private Vector3 Normalize(Vector3 v)
+    {
+        while (v.x > 180) v.x -= 360;
+        while (v.x < -180) v.x += 360;
+        while (v.y > 180) v.y -= 360;
+        while (v.y < -180) v.y += 360;
+        v.z = 0;
+        return v;
+    }
 
     private class TimePoint
     {
@@ -104,6 +113,7 @@ public class controller : MonoBehaviour
         private List<ViewPoint> viewPoints, activePoints;
         private GameObject[] boards = new GameObject[4];
         //private GameObject[] arrows = new GameObject[8];
+        private int boardNum = 0;
 
         public ViewPointController()
         {
@@ -264,6 +274,19 @@ public class controller : MonoBehaviour
                 RendBoard(boards[i], activePoints[i].camera, dir, father);
             }
         }
+        public GameObject GetTargetCamera(Transform board)
+        {
+            for (int i = 0; i < boardNum; i++)
+            {
+                if (boards[i].transform == board)
+                {
+                    return activePoints[i].camera;
+                }
+            }
+            // error
+            print("error");
+            return new GameObject();
+        }
     }
 
     private void LoadViews()
@@ -277,9 +300,39 @@ public class controller : MonoBehaviour
         LoadViews();
     }
 
+    private const float moveSpeed = 2;
+    private bool moving = false;
+    private GameObject targetCamera;
     private const float speed = 0.25f;
+
+    // using current timestamp as log file path
+    String logFilePath = DateTime.Now.ToString("yyyyddMM-HHmmss") + ".txt";
+
+
+    public void MoveTo(Transform board)
+    {
+        if (!moving)
+        {
+            targetCamera = VPC.GetTargetCamera(board);
+            moving = true;
+        }
+    }
+
     void Update()
     {
+        if (moving)
+        {
+            Vector3 vec = Normalize(new Vector3(0, (targetCamera.transform.eulerAngles - mainCamera.transform.eulerAngles).y, 0));
+            if (vec.magnitude <= moveSpeed)
+            {
+                mainCamera.transform.parent.localEulerAngles += vec.magnitude * Vector3.Normalize(vec);
+                moving = false;
+            }
+            else
+            {
+                mainCamera.transform.parent.localEulerAngles += moveSpeed * Vector3.Normalize(vec);
+            }
+        }
         Vector3 rotation = mainCamera.transform.eulerAngles;
         if (Input.GetKey(KeyCode.W))
         {
@@ -321,5 +374,13 @@ public class controller : MonoBehaviour
         }
         
         VPC.Update(videoPlayer.GetComponent<VideoPlayer>().frame, mainCamera, this);
+        
+        if (videoPlayer.GetComponent<VideoPlayer>().isPlaying) {
+            using (StreamWriter writer = File.AppendText(logFilePath))
+            {
+                writer.WriteLine(videoPlayer.GetComponent<VideoPlayer>().frame / 30.0f + " " + mainCamera.transform.eulerAngles.x + " " + mainCamera.transform.eulerAngles.y + " " + mainCamera.transform.eulerAngles.z);
+            }
+        }
+
     }
 }
