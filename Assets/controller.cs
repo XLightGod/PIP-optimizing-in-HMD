@@ -169,7 +169,7 @@ public class controller : MonoBehaviour
 
             float tx = (float)((X + Y) * Math.Sin(dir.x * K / 180 * Math.PI));
             float ty = (float)(Math.Abs((X + Y) * Math.Cos(dir.x * K / 180 * Math.PI)) - X);
-            board.transform.localPosition = new Vector3(tx, -0.58f, ty);
+            board.transform.localPosition = new Vector3(tx, -0.53f, ty);
             board.transform.localEulerAngles = new Vector3(0, 0, 0);
             board.transform.localScale = new Vector3(boardSize, boardSize, 0.01f);
 
