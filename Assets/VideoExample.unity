@@ -325,7 +325,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c27767748ccead44da9fdffb47762df5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  boardSize: 0.07
+  boardSize: 0.085
   boardDis: 0.4
   mainCamera: {fileID: 679677100}
   videoPlayer: {fileID: 2129898225}
@@ -378,7 +378,7 @@ VideoPlayer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2129898225}
   m_Enabled: 1
-  m_VideoClip: {fileID: 32900000, guid: f378fdb262d075640aef9452ecedf5ce, type: 3}
+  m_VideoClip: {fileID: 32900000, guid: f389ffa0b6caf914a84e29a8e317bbf8, type: 3}
   m_TargetCameraAlpha: 1
   m_TargetCamera3DLayout: 0
   m_TargetCamera: {fileID: 0}
